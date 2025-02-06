@@ -1,15 +1,17 @@
-export class MaxHeap<T> {
+abstract class PriorityQueue<T> {
   private readonly heap: T[] = []
 
   get length(): number {
     return this.heap.length
   }
 
+  abstract compare(a: T, b: T): number
+
   push(value: T): void {
     this.heap.push(value)
     let i = this.heap.length - 1
     let p: number
-    while (i > 0 && this.heap[(p = Math.floor((i - 1) / 2))] < value) {
+    while (i > 0 && this.compare(this.heap[(p = Math.floor((i - 1) / 2))], value) < 0) {
       this.swap(i, p)
       i = p
     }
@@ -32,10 +34,10 @@ export class MaxHeap<T> {
     while ((left = i * 2 + 1) < this.heap.length) {
       const right = left + 1
       let max = left
-      if (right < this.heap.length && this.heap[right] > this.heap[left]) {
+      if (right < this.heap.length && this.compare(this.heap[right], this.heap[left]) > 0) {
         max = right
       }
-      if (this.heap[i] >= this.heap[max]) {
+      if (this.compare(this.heap[i], this.heap[max]) >= 0) {
         break
       }
       this.swap(i, max)
@@ -53,5 +55,16 @@ export class MaxHeap<T> {
     const temp = this.heap[index1]
     this.heap[index1] = this.heap[index2]
     this.heap[index2] = temp
+  }
+}
+
+export class MinHeap extends PriorityQueue<number> {
+  compare(a: number, b: number): number {
+    return b - a
+  }
+}
+export class MaxHeap extends PriorityQueue<number> {
+  compare(a: number, b: number): number {
+    return a - b
   }
 }
