@@ -5,7 +5,7 @@ abstract class PriorityQueue<T> {
     return this.heap.length
   }
 
-  abstract compare(a: T, b: T): number
+  protected abstract compare(a: T, b: T): number
 
   push(value: T): void {
     this.heap.push(value)
@@ -59,12 +59,12 @@ abstract class PriorityQueue<T> {
 }
 
 export class MinHeap extends PriorityQueue<number> {
-  compare(a: number, b: number): number {
+  protected compare(a: number, b: number): number {
     return b - a
   }
 }
 export class MaxHeap extends PriorityQueue<number> {
-  compare(a: number, b: number): number {
+  protected compare(a: number, b: number): number {
     return a - b
   }
 }
