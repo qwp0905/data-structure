@@ -1,4 +1,4 @@
-abstract class PriorityQueue<T> {
+export abstract class PriorityQueue<T> {
   private readonly heap: T[] = []
   constructor(iterable?: Iterable<T>) {
     if (!iterable) {
