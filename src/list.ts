@@ -4,10 +4,19 @@ class Node<T> {
   constructor(readonly value: T) {}
 }
 
-export class DoubleLinkedList<T> {
+export class DoubleLinkedList<T> implements Iterable<T> {
   private head: Node<T> | null = null
   private tail: Node<T> | null = null
   private len = 0
+
+  constructor(iterable?: Iterable<T>) {
+    if (!iterable) {
+      return
+    }
+    for (const v of iterable) {
+      this.pushBack(v)
+    }
+  }
 
   get length(): number {
     return this.len
@@ -77,11 +86,13 @@ export class DoubleLinkedList<T> {
     return this.head?.value
   }
 
-  *[Symbol.iterator](): IterableIterator<T> {
+  *values(): IterableIterator<T> {
     let current = this.head
     while (current !== null) {
       yield current.value
       current = current.next
     }
   }
+
+  readonly [Symbol.iterator] = this.values
 }

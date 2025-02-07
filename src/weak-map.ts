@@ -2,6 +2,15 @@ export class InvertedWeakMap<K, V extends WeakKey> implements Map<K, V> {
   private readonly map = new Map<K, WeakRef<V>>()
   private readonly registry = new FinalizationRegistry<K>(this.map.delete.bind(this.map))
 
+  constructor(iterable?: Iterable<[K, V]>) {
+    if (!iterable) {
+      return
+    }
+    for (const [k, v] of iterable) {
+      this.set(k, v)
+    }
+  }
+
   clear() {
     this.map.clear()
   }

@@ -1,5 +1,14 @@
 abstract class PriorityQueue<T> {
   private readonly heap: T[] = []
+  constructor(iterable?: Iterable<T>) {
+    if (!iterable) {
+      return
+    }
+
+    for (const v of iterable) {
+      this.push(v)
+    }
+  }
 
   get length(): number {
     return this.heap.length
