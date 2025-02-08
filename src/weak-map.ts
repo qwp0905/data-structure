@@ -56,7 +56,7 @@ export class InvertedWeakMap<K, V extends WeakKey> implements Map<K, V> {
     return this.map.size
   }
 
-  *[Symbol.iterator](): IterableIterator<[K, V]> {
+  *entries(): IterableIterator<[K, V]> {
     for (const [key, ref] of this.map.entries()) {
       const value = ref.deref()
       if (!value) {
@@ -64,10 +64,6 @@ export class InvertedWeakMap<K, V extends WeakKey> implements Map<K, V> {
       }
       yield [key, value] as [K, V]
     }
-  }
-
-  *entries(): IterableIterator<[K, V]> {
-    yield* this
   }
 
   *keys(): IterableIterator<K> {
@@ -81,6 +77,8 @@ export class InvertedWeakMap<K, V extends WeakKey> implements Map<K, V> {
       yield value
     }
   }
+
+  [Symbol.iterator] = this.entries
 
   forEach(callback: (value: V, key: K, map: typeof this) => void): void
   forEach<T>(callback: (this: T, value: V, key: K, map: typeof this) => void, thisArg: T): void
