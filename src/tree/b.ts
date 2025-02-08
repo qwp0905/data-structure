@@ -1,19 +1,20 @@
-class MapEntry<K, V> {
-  constructor(
-    public key: K,
-    public value: V
-  ) {}
+interface Entry<T> {
+  readonly key: T
 }
 
-class MapNode<K, V> {
-  entries: MapEntry<K, V>[] = []
-  children: MapNode<K, V>[] = []
+class DefaultEntry<T> implements Entry<T> {
+  constructor(readonly key: T) {}
+}
+
+class Node<T, E extends Entry<T>> {
+  entries: E[] = []
+  children: Node<T, E>[] = []
 
   private isLeaf() {
     return this.children.length === 0
   }
 
-  *[Symbol.iterator](): IterableIterator<MapEntry<K, V>> {
+  *[Symbol.iterator](): IterableIterator<E> {
     if (this.isLeaf()) {
       yield* this.entries
       return
@@ -27,7 +28,7 @@ class MapNode<K, V> {
     yield* this.children.at(-1)!
   }
 
-  private search(k: K): [number, MapEntry<K, V> | null] {
+  private search(k: T): [number, E | null] {
     let left = 0
     let right = this.entries.length - 1
     while (left <= right) {
@@ -45,24 +46,24 @@ class MapNode<K, V> {
     return [left, null]
   }
 
-  private split(): [MapEntry<K, V>, MapNode<K, V>] {
+  private split(): [E, Node<T, E>] {
     const mid = Math.floor(this.entries.length / 2) + 1
-    const right = new MapNode<K, V>()
+    const right = new Node<T, E>()
     right.entries = this.entries.splice(mid)
     right.children = this.children.splice(mid)
     const entry = this.entries.pop()!
     return [entry, right]
   }
 
-  set(k: K, v: V, maxKeys: number): [MapEntry<K, V>, MapNode<K, V>] | boolean {
-    const [index, entry] = this.search(k)
-    if (entry) {
-      entry.value = v
+  insert(entry: E, maxKeys: number): [E, Node<T, E>] | boolean {
+    const [index, found] = this.search(entry.key)
+    if (found) {
+      this.entries[index] = entry
       return false
     }
 
     if (this.isLeaf()) {
-      this.entries.splice(index, 0, new MapEntry(k, v))
+      this.entries.splice(index, 0, entry)
       if (this.entries.length < maxKeys) {
         return true
       }
@@ -70,7 +71,7 @@ class MapNode<K, V> {
       return this.split()
     }
 
-    const evicted = this.children[index].set(k, v, maxKeys)
+    const evicted = this.children[index].insert(entry, maxKeys)
     if (typeof evicted === "boolean") {
       return evicted
     }
@@ -85,7 +86,7 @@ class MapNode<K, V> {
     return this.split()
   }
 
-  has(k: K): boolean {
+  has(k: T): boolean {
     const [index, entry] = this.search(k)
     if (entry) {
       return true
@@ -97,10 +98,10 @@ class MapNode<K, V> {
     return this.children[index].has(k)
   }
 
-  get(k: K): V | undefined {
+  get(k: T): E | undefined {
     const [index, entry] = this.search(k)
     if (entry) {
-      return entry.value
+      return entry
     }
     if (this.isLeaf()) {
       return
@@ -109,8 +110,8 @@ class MapNode<K, V> {
     return this.children[index].get(k)
   }
 
-  private swapPredecessor(entry: MapEntry<K, V>) {
-    let node = this as MapNode<K, V>
+  private swapPredecessor(entry: E) {
+    let node = this as Node<T, E>
     while (!node.isLeaf()) {
       node = node.children.at(-1)!
     }
@@ -118,7 +119,7 @@ class MapNode<K, V> {
     return node.entries.splice(-1, 1, entry)[0]
   }
 
-  delete(k: K, minKeys: number) {
+  delete(k: T, minKeys: number) {
     const [index, found] = this.search(k)
     if (this.isLeaf()) {
       if (!found) {
@@ -165,14 +166,14 @@ class MapNode<K, V> {
   }
 }
 
-export class BTreeMap<K, V> implements Map<K, V> {
-  private root = new MapNode<K, V>()
+export class BTree<T, E extends Entry<T> = Entry<T>> {
+  private root = new Node<T, E>()
   private len = 0
 
   constructor(private readonly degree: number) {}
 
-  set(k: K, v: V) {
-    const evicted = this.root.set(k, v, this.degree)
+  insert(entry: E) {
+    const evicted = this.root.insert(entry, this.degree)
     if (typeof evicted === "boolean") {
       if (evicted) {
         this.len += 1
@@ -181,19 +182,19 @@ export class BTreeMap<K, V> implements Map<K, V> {
     }
 
     this.len += 1
-    const [entry, right] = evicted
-    const newRoot = new MapNode<K, V>()
-    newRoot.entries = [entry]
+    const [en, right] = evicted
+    const newRoot = new Node<T, E>()
+    newRoot.entries = [en]
     newRoot.children = [this.root, right]
     this.root = newRoot
     return this
   }
 
-  get(k: K): V | undefined {
+  get(k: T): E | undefined {
     return this.root.get(k)
   }
 
-  delete(k: K) {
+  delete(k: T) {
     const minKeys = Math.ceil(this.degree / 2) - 1
     if (!this.root.delete(k, minKeys)) {
       return false
@@ -209,31 +210,80 @@ export class BTreeMap<K, V> implements Map<K, V> {
 
   clear() {
     this.len = 0
-    this.root = new MapNode<K, V>()
+    this.root = new Node<T, E>()
   }
 
-  has(k: K) {
+  has(k: T) {
     return this.root.has(k)
   }
 
-  get size() {
+  get length() {
     return this.len
   }
 
+  *[Symbol.iterator](): IterableIterator<E> {
+    yield* this.root
+  }
+}
+
+class MapEntry<K, V> implements Entry<K> {
+  constructor(
+    readonly key: K,
+    readonly value: V
+  ) {}
+}
+
+export class BTreeMap<K, V> implements Map<K, V> {
+  private readonly tree = new BTree<K, MapEntry<K, V>>(5)
+
+  constructor(iterable?: Iterable<[K, V]>) {
+    if (!iterable) {
+      return
+    }
+    for (const [k, v] of iterable) {
+      this.set(k, v)
+    }
+  }
+
+  set(k: K, v: V) {
+    this.tree.insert(new MapEntry(k, v))
+    return this
+  }
+
+  get(k: K) {
+    return this.tree.get(k)?.value
+  }
+
+  delete(k: K) {
+    return this.tree.delete(k)
+  }
+
+  clear() {
+    this.tree.clear()
+  }
+
+  has(key: K): boolean {
+    return this.tree.has(key)
+  }
+
+  get size() {
+    return this.tree.length
+  }
+
   *entries(): IterableIterator<[K, V]> {
-    for (const { key, value } of this.root) {
+    for (const { key, value } of this.tree) {
       yield [key, value]
     }
   }
 
   *keys(): IterableIterator<K> {
-    for (const [key] of this) {
+    for (const { key } of this.tree) {
       yield key
     }
   }
 
   *values(): IterableIterator<V> {
-    for (const [, value] of this) {
+    for (const { value } of this.tree) {
       yield value
     }
   }
@@ -249,4 +299,64 @@ export class BTreeMap<K, V> implements Map<K, V> {
   }
 
   [Symbol.iterator] = this.entries
+}
+
+export class BTreeSet<T> implements Set<T> {
+  private readonly tree = new BTree<T>(5)
+
+  constructor(iterable?: Iterable<T>) {
+    if (!iterable) {
+      return
+    }
+    for (const v of iterable) {
+      this.add(v)
+    }
+  }
+
+  add(v: T) {
+    this.tree.insert(new DefaultEntry(v))
+    return this
+  }
+
+  has(v: T) {
+    return this.tree.has(v)
+  }
+
+  delete(v: T) {
+    return this.tree.delete(v)
+  }
+
+  clear() {
+    this.tree.clear()
+  }
+
+  get size() {
+    return this.tree.length
+  }
+
+  *values(): IterableIterator<T> {
+    for (const { key } of this.tree) {
+      yield key
+    }
+  }
+
+  *keys(): IterableIterator<T> {
+    yield* this.values()
+  }
+
+  *entries(): IterableIterator<[T, T]> {
+    for (const key of this) {
+      yield [key, key]
+    }
+  }
+
+  [Symbol.iterator] = this.values
+  forEach(callback: (value: T, key: T, map: typeof this) => void): void
+  forEach<R>(callback: (this: T, value: T, key: T, map: typeof this) => void, thisArg: R): void
+  forEach(callback: (value: T, key: T, map: typeof this) => void, thisArg?: any) {
+    for (const key of this) {
+      callback.call(thisArg, key, key, this)
+    }
+  }
+  [Symbol.toStringTag] = this.constructor.name
 }
