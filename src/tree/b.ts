@@ -157,10 +157,10 @@ class Node<K, V> {
     }
 
     const [entry] = this.entries.splice(index, 1)
-    const [rightNode] = this.children.splice(index + 1, 1)
+    const [node] = this.children.splice(index + 1, 1)
     this.children[index].entries.push(entry)
-    this.children[index].entries.push(...rightNode.entries)
-    this.children[index].children.push(...rightNode.children)
+    this.children[index].entries.push(...node.entries)
+    this.children[index].children.push(...node.children)
     return true
   }
 }
