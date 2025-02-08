@@ -166,11 +166,13 @@ class Node<T, E extends Entry<T>> {
   }
 }
 
+const DEFAULT_DEGREE = 5
+
 export class BTree<T, E extends Entry<T> = Entry<T>> {
   private root = new Node<T, E>()
   private len = 0
 
-  constructor(private readonly degree: number) {}
+  constructor(private readonly degree: number = DEFAULT_DEGREE) {}
 
   insert(entry: E) {
     const evicted = this.root.insert(entry, this.degree)
