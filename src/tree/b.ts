@@ -10,7 +10,7 @@ class Node<T, E extends Entry<T>> {
   entries: E[] = []
   children: Node<T, E>[] = []
 
-  private isLeaf() {
+  isLeaf() {
     return this.children.length === 0
   }
 
@@ -157,11 +157,24 @@ class Node<T, E extends Entry<T>> {
       return true
     }
 
-    const [entry] = this.entries.splice(index, 1)
-    const [node] = this.children.splice(index + 1, 1)
-    this.children[index].entries.push(entry)
-    this.children[index].entries.push(...node.entries)
-    this.children[index].children.push(...node.children)
+    if (left) {
+      const entry = this.entries.splice(index - 1, 1)[0]
+      const node = this.children.splice(index, 1)[0]
+      left.entries.push(entry, ...node.entries)
+      left.children.push(...node.children)
+      return true
+    }
+
+    if (right) {
+      const entry = this.entries.splice(index, 1)[0]
+      const node = this.children.splice(index, 1)[0]
+      right.entries.unshift(...node.entries, entry)
+      right.children.unshift(...node.children)
+      return true
+    }
+
+    this.entries = this.children[0].entries
+    this.children = this.children[0].children
     return true
   }
 }
@@ -201,12 +214,17 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
     if (!this.root.delete(k, minKeys)) {
       return false
     }
-    this.len += 1
-    if (this.root.entries.length >= minKeys) {
+
+    this.len -= 1
+    if (this.root.entries.length > 0) {
       return true
     }
-    this.root = this.root.children[0]
 
+    if (this.root.isLeaf()) {
+      return true
+    }
+
+    this.root = this.root.children[0]
     return true
   }
 
