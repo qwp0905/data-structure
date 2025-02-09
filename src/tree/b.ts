@@ -210,6 +210,10 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
   }
 
   delete(k: T) {
+    if (this.len === 0) {
+      return false
+    }
+
     const minKeys = Math.ceil(this.degree / 2) - 1
     if (!this.root.delete(k, minKeys)) {
       return false
