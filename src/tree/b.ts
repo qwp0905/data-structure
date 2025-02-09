@@ -236,7 +236,7 @@ class MapEntry<K, V> implements Entry<K> {
 }
 
 export class BTreeMap<K, V> implements Map<K, V> {
-  private readonly tree = new BTree<K, MapEntry<K, V>>(5)
+  private readonly tree = new BTree<K, MapEntry<K, V>>()
 
   constructor(iterable?: Iterable<[K, V]>) {
     if (!iterable) {
@@ -304,7 +304,7 @@ export class BTreeMap<K, V> implements Map<K, V> {
 }
 
 export class BTreeSet<T> implements Set<T> {
-  private readonly tree = new BTree<T>(5)
+  private readonly tree = new BTree<T>()
 
   constructor(iterable?: Iterable<T>) {
     if (!iterable) {
