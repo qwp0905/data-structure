@@ -410,3 +410,143 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
     }
   }
 }
+
+class MapEntry<K, V> implements Entry<K> {
+  constructor(
+    readonly key: K,
+    readonly value: V
+  ) {}
+}
+
+export class BPlusTreeMap<K, V> implements Map<K, V> {
+  private tree = new BPlusTree<K, MapEntry<K, V>>()
+  constructor(iterable?: Iterable<[K, V]>) {
+    if (!iterable) {
+      return
+    }
+    for (const [k, v] of iterable) {
+      this.set(k, v)
+    }
+  }
+
+  set(key: K, value: V): this {
+    this.tree.insert(new MapEntry(key, value))
+    return this
+  }
+
+  get(key: K): V | undefined {
+    const entry = this.tree.get(key)
+    return entry?.value
+  }
+
+  has(key: K): boolean {
+    return this.tree.has(key)
+  }
+
+  delete(key: K): boolean {
+    return this.tree.delete(key)
+  }
+
+  clear() {
+    this.tree = new BPlusTree<K, MapEntry<K, V>>()
+  }
+
+  get size() {
+    return this.tree.length
+  }
+
+  *entries(): IterableIterator<[K, V]> {
+    for (const entry of this.tree.entries()) {
+      yield [entry.key, entry.value]
+    }
+  }
+
+  *keys(): IterableIterator<K> {
+    for (const entry of this.tree.entries()) {
+      yield entry.key
+    }
+  }
+
+  *values(): IterableIterator<V> {
+    for (const entry of this.tree.entries()) {
+      yield entry.value
+    }
+  }
+
+  [Symbol.iterator]() {
+    return this.entries()
+  }
+
+  [Symbol.toStringTag] = this.constructor.name
+
+  forEach(callback: (value: V, key: K, map: typeof this) => void): void
+  forEach<R>(callback: (this: R, value: V, key: K, map: typeof this) => void, thisArg: R): void
+  forEach(callback: (value: V, key: K, map: typeof this) => void, thisArg?: any) {
+    for (const [key, value] of this) {
+      callback.call(thisArg, value, key, this)
+    }
+  }
+}
+
+export class BPlusTreeSet<T> implements Set<T> {
+  private tree = new BPlusTree<T, DefaultEntry<T>>()
+  constructor(iterable?: Iterable<T>) {
+    if (!iterable) {
+      return
+    }
+    for (const k of iterable) {
+      this.add(k)
+    }
+  }
+
+  add(v: T) {
+    this.tree.insert(new DefaultEntry(v))
+    return this
+  }
+
+  has(v: T) {
+    return this.tree.has(v)
+  }
+
+  delete(v: T) {
+    return this.tree.delete(v)
+  }
+
+  clear() {
+    this.tree = new BPlusTree<T, DefaultEntry<T>>()
+  }
+
+  get size() {
+    return this.tree.length
+  }
+
+  *entries(): IterableIterator<[T, T]> {
+    for (const entry of this.tree.entries()) {
+      yield [entry.key, entry.key]
+    }
+  }
+
+  *values(): IterableIterator<T> {
+    for (const entry of this.tree.entries()) {
+      yield entry.key
+    }
+  }
+
+  *keys(): IterableIterator<T> {
+    yield* this.values()
+  }
+
+  [Symbol.iterator]() {
+    return this.values()
+  }
+
+  [Symbol.toStringTag] = this.constructor.name
+
+  forEach(callback: (value: T, key: T, map: typeof this) => void): void
+  forEach<R>(callback: (this: R, value: T, key: T, map: typeof this) => void, thisArg: R): void
+  forEach(callback: (value: T, key: T, map: typeof this) => void, thisArg?: any) {
+    for (const key of this) {
+      callback.call(thisArg, key, key, this)
+    }
+  }
+}
