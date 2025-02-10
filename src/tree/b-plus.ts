@@ -1,5 +1,5 @@
 interface Entry<T> {
-  key: T
+  readonly key: T
 }
 
 class DefaultEntry<T> implements Entry<T> {
@@ -97,18 +97,18 @@ class Internal<T, E extends Entry<T>> {
     return this.keys[0]
   }
 
-  insert(entry: E, maxKeys: number): [T | null, Node<T, E> | null, boolean] {
+  insert(entry: E, maxKeys: number): [T, Node<T, E>, boolean] | [null, null, boolean] {
     const index = this.search(entry.key)
     const [top, node, inserted] = this.children[index].insert(entry, maxKeys)
     if (!node) {
       if (this.children[index].isLeaf()) {
-        this.keys[index - 1] = top
+        this.keys[index - 1] = this.children[index].leaf!.top()
       }
 
       return [null, null, inserted]
     }
 
-    this.keys.splice(index, 0, top)
+    this.keys.splice(index, 0, top!)
     this.children.splice(index + 1, 0, node)
     if (this.keys.length < maxKeys) {
       return [null, null, inserted]
@@ -133,9 +133,9 @@ class Internal<T, E extends Entry<T>> {
   getPrecessor() {
     let node = this as Internal<T, E>
     while (!node.children[0].isLeaf()) {
-      node = node.children[node.children.length - 1].internal
+      node = node.children[node.children.length - 1].internal!
     }
-    return node.children[0].leaf.top()
+    return node.children[0].leaf!.top()
   }
 
   delete(k: T, minKeys: number): boolean {
@@ -152,7 +152,7 @@ class Internal<T, E extends Entry<T>> {
       }
 
       const left = this.children[index - 1]?.leaf
-      if (left?.entries.length > minKeys) {
+      if (left && left.entries.length > minKeys) {
         const entry = left.entries.pop()!
         leaf.entries.unshift(entry)
         this.keys[index - 1] = entry.key
@@ -160,7 +160,7 @@ class Internal<T, E extends Entry<T>> {
       }
 
       const right = this.children[index + 1]?.leaf
-      if (right?.entries.length > minKeys) {
+      if (right && right.entries.length > minKeys) {
         const entry = right.entries.shift()!
         leaf.entries.push(entry)
         this.keys[index] = right.top()
@@ -182,12 +182,12 @@ class Internal<T, E extends Entry<T>> {
         return true
       }
 
-      this.keys = this.children[0].leaf.entries.map((entry) => entry.key)
+      this.keys = this.children[0].leaf!.entries.map((entry) => entry.key)
       this.children = [this.children[0]]
       return true
     }
 
-    const internal = this.children[index].internal
+    const internal = this.children[index].internal!
     const found = index > 0 && this.keys[index - 1] === k
     if (!internal.delete(k, minKeys)) {
       return false
@@ -201,7 +201,7 @@ class Internal<T, E extends Entry<T>> {
     }
 
     const left = this.children[index - 1]?.internal
-    if (left?.keys.length > minKeys) {
+    if (left && left.keys.length > minKeys) {
       const key = left.keys.pop()!
       const child = left.children.pop()!
       internal.children.unshift(child)
@@ -211,7 +211,7 @@ class Internal<T, E extends Entry<T>> {
     }
 
     const right = this.children[index + 1]?.internal
-    if (right?.keys.length > minKeys) {
+    if (right && right.keys.length > minKeys) {
       const key = right.keys.shift()!
       const child = right.children.shift()!
       internal.children.push(child)
@@ -255,10 +255,14 @@ class Cursor<T, E extends Entry<T>> implements IterableIterator<E> {
     return this
   }
 
-  next() {
+  next(): IteratorResult<E> {
     if (this.index === this.current!.entries.length) {
       this.current = this.current!.next
       this.index = 0
+    }
+
+    if (!this.current) {
+      return { done: true, value: undefined }
     }
 
     const current = this.current!.entries[this.index++]
@@ -383,11 +387,11 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
       return true
     }
 
-    if (this.root.internal.keys.length > 0) {
+    if (this.root.internal!.keys.length > 0) {
       return true
     }
 
-    this.root = this.root.internal.children[0]
+    this.root = this.root.internal!.children[0]
     return true
   }
 
@@ -398,7 +402,7 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
   *entries() {
     let node = this.root
     while (!node.isLeaf()) {
-      node = node.internal.children[0]
+      node = node.internal!.children[0]
     }
 
     for (let leaf: Leaf<T, E> | null = node.leaf; !!leaf; leaf = leaf.next) {
