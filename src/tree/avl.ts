@@ -113,8 +113,8 @@ class Node<T, E extends Entry<T>> {
   private rotateLeft() {
     const node = this.left!
     this.left = node.right
-    this.height = Math.max(this.right?.height ?? 0, this.left?.height ?? 0) + 1
     node.right = this
+    this.height = Math.max(this.right?.height ?? 0, this.left?.height ?? 0) + 1
     node.height = Math.max(node.left?.height ?? 0, node.right.height) + 1
     return node
   }
@@ -122,8 +122,8 @@ class Node<T, E extends Entry<T>> {
   private rotateRight() {
     const node = this.right!
     this.right = node.left
-    this.height = Math.max(this.left?.height ?? 0, this.right?.height ?? 0) + 1
     node.left = this
+    this.height = Math.max(this.left?.height ?? 0, this.right?.height ?? 0) + 1
     node.height = Math.max(node.right?.height ?? 0, node.left.height) + 1
     return node
   }
