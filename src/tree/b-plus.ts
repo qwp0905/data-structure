@@ -30,16 +30,17 @@ class Leaf<T, E extends Entry<T>> {
     return this.entries[0].key
   }
 
-  insert(entry: E, maxKeys: number): [T | null, Node<T, E> | null, boolean] {
+  insert(entry: E, maxKeys: number): [T | null, Node<T, E> | null, E | null] {
     const [index, found] = this.search(entry.key)
     if (found) {
+      const prev = this.entries[index]
       this.entries[index] = entry
-      return [null, null, false]
+      return [null, null, prev]
     }
 
     this.entries.splice(index, 0, entry)
     if (this.entries.length < maxKeys) {
-      return [this.entries[0].key, null, true]
+      return [this.entries[0].key, null, null]
     }
 
     const mid = Math.floor(this.entries.length / 2)
@@ -47,7 +48,7 @@ class Leaf<T, E extends Entry<T>> {
     node.entries = this.entries.splice(mid)
     node.next = this.next
     this.next = node
-    return [node.top(), Node.leaf(node), true]
+    return [node.top(), Node.leaf(node), null]
   }
 
   get(k: T): E | undefined {
@@ -64,14 +65,14 @@ class Leaf<T, E extends Entry<T>> {
     return found
   }
 
-  delete(k: T): boolean {
+  delete(k: T): E | null {
     const [index, found] = this.search(k)
     if (!found) {
-      return false
+      return null
     }
 
-    this.entries.splice(index, 1)
-    return true
+    const [deleted] = this.entries.splice(index, 1)
+    return deleted
   }
 }
 class Internal<T, E extends Entry<T>> {
@@ -97,7 +98,7 @@ class Internal<T, E extends Entry<T>> {
     return this.keys[0]
   }
 
-  insert(entry: E, maxKeys: number): [T, Node<T, E>, boolean] | [null, null, boolean] {
+  insert(entry: E, maxKeys: number): [T, Node<T, E>, E | null] | [null, null, E | null] {
     const index = this.search(entry.key)
     const [top, node, inserted] = this.children[index].insert(entry, maxKeys)
     if (!node) {
@@ -142,17 +143,18 @@ class Internal<T, E extends Entry<T>> {
     return node.children[0].leaf!.top()
   }
 
-  delete(k: T, minKeys: number): boolean {
+  delete(k: T, minKeys: number): E | null {
     const index = this.search(k)
     const leaf = this.children[index].leaf
     if (leaf) {
-      if (!leaf.delete(k)) {
-        return false
+      const deleted = leaf.delete(k)
+      if (!deleted) {
+        return null
       }
 
       if (leaf.entries.length >= minKeys) {
         this.keys[index - 1] = leaf.top()
-        return true
+        return deleted
       }
 
       const left = this.children[index - 1]?.leaf
@@ -160,7 +162,7 @@ class Internal<T, E extends Entry<T>> {
         const entry = left.entries.pop()!
         leaf.entries.unshift(entry)
         this.keys[index - 1] = entry.key
-        return true
+        return deleted
       }
 
       const right = this.children[index + 1]?.leaf
@@ -168,7 +170,7 @@ class Internal<T, E extends Entry<T>> {
         const entry = right.entries.shift()!
         leaf.entries.push(entry)
         this.keys[index] = right.top()
-        return true
+        return deleted
       }
 
       if (left) {
@@ -176,32 +178,33 @@ class Internal<T, E extends Entry<T>> {
         left.next = leaf.next
         this.keys.splice(index - 1, 1)
         this.children.splice(index, 1)
-        return true
+        return deleted
       }
       if (right) {
         leaf.entries.push(...right.entries)
         leaf.next = right.next
         this.keys.splice(index, 1)
         this.children.splice(index + 1, 1)
-        return true
+        return deleted
       }
 
       this.keys = this.children[0].leaf!.entries.map((entry) => entry.key)
       this.children = [this.children[0]]
-      return true
+      return deleted
     }
 
     const internal = this.children[index].internal!
     const found = index > 0 && this.keys[index - 1] === k
-    if (!internal.delete(k, minKeys)) {
-      return false
+    const deleted = internal.delete(k, minKeys)
+    if (!deleted) {
+      return null
     }
 
     if (found) {
       this.keys[index - 1] = internal.getPredecessor()
     }
     if (internal.keys.length >= minKeys) {
-      return true
+      return deleted
     }
 
     const left = this.children[index - 1]?.internal
@@ -211,7 +214,7 @@ class Internal<T, E extends Entry<T>> {
       internal.children.unshift(child)
       internal.keys.unshift(this.keys[index - 1])
       this.keys[index - 1] = key
-      return true
+      return deleted
     }
 
     const right = this.children[index + 1]?.internal
@@ -221,7 +224,7 @@ class Internal<T, E extends Entry<T>> {
       internal.children.push(child)
       internal.keys.push(this.keys[index])
       this.keys[index] = key
-      return true
+      return deleted
     }
 
     if (left) {
@@ -230,7 +233,7 @@ class Internal<T, E extends Entry<T>> {
       left.children.push(...internal.children)
       this.keys.splice(index - 1, 1)
       this.children.splice(index, 1)
-      return true
+      return deleted
     }
 
     if (right) {
@@ -239,12 +242,12 @@ class Internal<T, E extends Entry<T>> {
       internal.children.push(...right.children)
       this.keys.splice(index, 1)
       this.children.splice(index + 1, 1)
-      return true
+      return deleted
     }
 
     this.keys = internal.keys
     this.children = internal.children
-    return true
+    return deleted
   }
 }
 
@@ -356,12 +359,13 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
     return this.len
   }
 
-  insert(entry: E) {
-    const [key, node, inserted] = this.root.insert(entry, this.degree)
-    if (inserted) {
-      this.len += 1
+  insert(entry: E): E | undefined {
+    const [key, node, prev] = this.root.insert(entry, this.degree)
+    if (prev) {
+      return prev
     }
 
+    this.len += 1
     if (!node) {
       return
     }
@@ -372,31 +376,32 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
     this.root = Node.internal(internal)
   }
 
-  get(k: T) {
+  get(k: T): E | undefined {
     return this.root.get(k)
   }
 
-  has(k: T) {
+  has(k: T): boolean {
     return this.root.has(k)
   }
 
-  delete(k: T) {
+  delete(k: T): E | undefined {
     const minKeys = Math.ceil(this.degree / 2) - 1
-    if (!this.root.delete(k, minKeys)) {
-      return false
+    const deleted = this.root.delete(k, minKeys)
+    if (!deleted) {
+      return
     }
 
     this.len -= 1
     if (this.root.isLeaf()) {
-      return true
+      return deleted
     }
 
     if (this.root.internal!.keys.length > 0) {
-      return true
+      return deleted
     }
 
     this.root = this.root.internal!.children[0]
-    return true
+    return deleted
   }
 
   *range(s: T, e: T): IterableIterator<E> {
@@ -448,7 +453,7 @@ export class BPlusTreeMap<K, V> implements Map<K, V> {
   }
 
   delete(key: K): boolean {
-    return this.tree.delete(key)
+    return !!this.tree.delete(key)
   }
 
   clear() {
@@ -513,7 +518,7 @@ export class BPlusTreeSet<T> implements Set<T> {
   }
 
   delete(v: T) {
-    return this.tree.delete(v)
+    return !!this.tree.delete(v)
   }
 
   clear() {
