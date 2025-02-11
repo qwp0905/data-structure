@@ -142,7 +142,6 @@ class Node<T, E extends Entry<T>> {
 export class AVLTree<T, E extends Entry<T> = Entry<T>> {
   private root: Node<T, E> | null = null
   private len = 0
-  constructor() {}
 
   get length() {
     return this.len
