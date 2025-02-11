@@ -10,40 +10,41 @@ class Node<T, E extends Entry<T>> {
     public height = 1
   ) {}
 
-  insert(entry: E): [Node<T, E>, boolean] {
+  insert(entry: E): [Node<T, E>, E | null] {
     if (entry.key === this.entry.key) {
+      const prev = this.entry
       this.entry = entry
-      return [this, false]
+      return [this, prev]
     }
     if (entry.key < this.entry.key) {
       if (!this.left) {
         this.left = new Node(entry)
         this.height = Math.max(2, this.height)
-        return [this, true]
+        return [this, null]
       }
 
-      const [node, inserted] = this.left.insert(entry)
-      if (!inserted) {
-        return [this, false]
+      const [node, prev] = this.left.insert(entry)
+      if (prev) {
+        return [this, prev]
       }
       this.left = node
       this.height = Math.max(this.left.height + 1, this.height)
-      return [this.rebalance(), true]
+      return [this.rebalance(), null]
     }
 
     if (!this.right) {
       this.right = new Node(entry)
       this.height = Math.max(2, this.height)
-      return [this, true]
+      return [this, null]
     }
 
-    const [node, inserted] = this.right.insert(entry)
-    if (!inserted) {
-      return [this, false]
+    const [node, prev] = this.right.insert(entry)
+    if (prev) {
+      return [this, prev]
     }
     this.right = node
     this.height = Math.max(this.right.height + 1, this.height)
-    return [this.rebalance(), true]
+    return [this.rebalance(), null]
   }
 
   get(k: T): E | undefined {
@@ -77,37 +78,37 @@ class Node<T, E extends Entry<T>> {
     return this.rotateRight()
   }
 
-  delete(k: T): [Node<T, E> | null, boolean] {
+  delete(k: T): [Node<T, E> | null, E | null] {
     if (k === this.entry.key) {
-      return [null, true]
+      return [null, this.entry]
     }
     if (k < this.entry.key) {
       if (!this.left) {
-        return [null, false]
+        return [null, null]
       }
 
       const [node, deleted] = this.left.delete(k)
       if (!deleted) {
-        return [null, false]
+        return [null, null]
       }
 
       this.left = node
       this.height = Math.max(this.left?.height ?? 0, this.right?.height ?? 0) + 1
-      return [this.rebalance(), true]
+      return [this.rebalance(), deleted]
     }
 
     if (!this.right) {
-      return [null, false]
+      return [null, null]
     }
 
     const [node, deleted] = this.right.delete(k)
     if (!deleted) {
-      return [null, false]
+      return [null, null]
     }
 
     this.right = node
     this.height = Math.max(this.left?.height ?? 0, this.right?.height ?? 0) + 1
-    return [this.rebalance(), true]
+    return [this.rebalance(), deleted]
   }
 
   private rotateLeft() {
@@ -147,37 +148,39 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     return this.len
   }
 
-  insert(entry: E): void {
+  insert(entry: E): E | undefined {
     if (!this.root) {
       this.root = new Node(entry)
       this.len += 1
       return
     }
 
-    const [node, inserted] = this.root.insert(entry)
-    if (inserted) {
-      this.len += 1
-    }
+    const [node, prev] = this.root.insert(entry)
     this.root = node
+    if (prev) {
+      return prev
+    }
+
+    this.len += 1
   }
 
   get(k: T): E | undefined {
     return this.root?.get(k)
   }
 
-  delete(k: T): boolean {
+  delete(k: T): E | undefined {
     if (!this.root) {
-      return false
+      return
     }
 
     const [node, deleted] = this.root.delete(k)
     if (!deleted) {
-      return false
+      return
     }
 
     this.len -= 1
     this.root = node
-    return true
+    return deleted
   }
 
   clear() {
