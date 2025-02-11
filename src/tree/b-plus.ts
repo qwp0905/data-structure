@@ -127,7 +127,11 @@ class Internal<T, E extends Entry<T>> {
   }
 
   has(k: T): boolean {
-    return this.children[this.search(k)].has(k)
+    const index = this.search(k)
+    if (this.keys[index - 1] === k) {
+      return true
+    }
+    return this.children[index].has(k)
   }
 
   getPredecessor() {

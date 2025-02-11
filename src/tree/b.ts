@@ -86,18 +86,6 @@ class Node<T, E extends Entry<T>> {
     return this.split()
   }
 
-  has(k: T): boolean {
-    const [index, entry] = this.search(k)
-    if (entry) {
-      return true
-    }
-    if (this.isLeaf()) {
-      return false
-    }
-
-    return this.children[index].has(k)
-  }
-
   get(k: T): E | undefined {
     const [index, entry] = this.search(k)
     if (entry) {
@@ -259,7 +247,7 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
   }
 
   has(k: T) {
-    return this.root.has(k)
+    return !!this.root.get(k)
   }
 
   range(s: T, e: T) {
