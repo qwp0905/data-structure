@@ -177,15 +177,36 @@ class Node<T, E extends Entry<T>> {
     this.children = this.children[0].children
     return true
   }
-}
 
-const DEFAULT_DEGREE = 5
+  *range(s: T, e: T): IterableIterator<E> {
+    const [index, found] = this.search(s)
+    if (found) {
+      yield found
+    }
+
+    if (this.isLeaf()) {
+      for (let i = index; i < this.entries.length && this.entries[i].key < e; i++) {
+        yield this.entries[i]
+      }
+      return
+    }
+
+    for (let i = index; i < this.entries.length; i++) {
+      yield* this.children[i].range(s, e)
+      if (this.entries[i].key >= e) {
+        return
+      }
+      yield this.entries[i]
+    }
+    yield* this.children.at(-1)!.range(s, e)
+  }
+}
 
 export class BTree<T, E extends Entry<T> = Entry<T>> {
   private root = new Node<T, E>()
   private len = 0
 
-  constructor(private readonly degree: number = DEFAULT_DEGREE) {}
+  constructor(private readonly degree: number = 3) {}
 
   insert(entry: E) {
     const evicted = this.root.insert(entry, this.degree)
@@ -239,6 +260,10 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
 
   has(k: T) {
     return this.root.has(k)
+  }
+
+  range(s: T, e: T) {
+    return this.root.range(s, e)
   }
 
   get length() {

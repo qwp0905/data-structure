@@ -130,7 +130,7 @@ class Internal<T, E extends Entry<T>> {
     return this.children[this.search(k)].has(k)
   }
 
-  getPrecessor() {
+  getPredecessor() {
     let node = this as Internal<T, E>
     while (!node.children[0].isLeaf()) {
       node = node.children[node.children.length - 1].internal!
@@ -194,7 +194,7 @@ class Internal<T, E extends Entry<T>> {
     }
 
     if (found) {
-      this.keys[index - 1] = internal.getPrecessor()
+      this.keys[index - 1] = internal.getPredecessor()
     }
     if (internal.keys.length >= minKeys) {
       return true
@@ -346,7 +346,7 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
   private root = new Node<T, E>(null, new Leaf<T, E>())
   private len = 0
 
-  constructor(private readonly degree: number = 5) {}
+  constructor(private readonly degree: number = 3) {}
 
   get length() {
     return this.len
