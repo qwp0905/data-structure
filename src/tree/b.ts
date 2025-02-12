@@ -55,35 +55,35 @@ class Node<T, E extends Entry<T>> {
     return [entry, right]
   }
 
-  insert(entry: E, maxKeys: number): [E, Node<T, E>] | boolean {
+  insert(entry: E, maxKeys: number): [[E, Node<T, E>] | null, E | null] {
     const [index, found] = this.search(entry.key)
     if (found) {
       this.entries[index] = entry
-      return false
+      return [null, found]
     }
 
     if (this.isLeaf()) {
       this.entries.splice(index, 0, entry)
       if (this.entries.length < maxKeys) {
-        return true
+        return [null, null]
       }
 
-      return this.split()
+      return [this.split(), null]
     }
 
-    const evicted = this.children[index].insert(entry, maxKeys)
-    if (typeof evicted === "boolean") {
-      return evicted
+    const [evicted, prev] = this.children[index].insert(entry, maxKeys)
+    if (!evicted) {
+      return [null, prev]
     }
 
     const [ee, el] = evicted
     this.entries.splice(index, 0, ee)
     this.children.splice(index + 1, 0, el)
     if (this.entries.length < maxKeys) {
-      return true
+      return [null, null]
     }
 
-    return this.split()
+    return [this.split(), null]
   }
 
   get(k: T): E | undefined {
@@ -107,27 +107,28 @@ class Node<T, E extends Entry<T>> {
     return node.entries.splice(-1, 1, entry)[0]
   }
 
-  delete(k: T, minKeys: number) {
+  delete(k: T, minKeys: number): E | undefined {
     const [index, found] = this.search(k)
     if (this.isLeaf()) {
       if (!found) {
-        return false
+        return
       }
 
       this.entries.splice(index, 1)
-      return true
+      return found
     }
 
     if (found) {
       this.entries[index] = this.children[index].swapPredecessor(found)
     }
 
-    if (!this.children[index].delete(k, minKeys)) {
-      return false
+    const deleted = this.children[index].delete(k, minKeys)
+    if (!deleted) {
+      return
     }
 
     if (this.children[index].entries.length >= minKeys) {
-      return true
+      return deleted
     }
 
     const left = this.children[index - 1]
@@ -135,14 +136,14 @@ class Node<T, E extends Entry<T>> {
       const entry = this.entries[index - 1]
       this.children[index].entries.unshift(entry)
       this.entries[index - 1] = left.entries.pop()!
-      return true
+      return deleted
     }
     const right = this.children[index + 1]
     if (right?.entries.length > minKeys) {
       const entry = this.entries[index]
       this.children[index].entries.push(entry)
       this.entries[index] = right.entries.shift()!
-      return true
+      return deleted
     }
 
     if (left) {
@@ -150,7 +151,7 @@ class Node<T, E extends Entry<T>> {
       const node = this.children.splice(index, 1)[0]
       left.entries.push(entry, ...node.entries)
       left.children.push(...node.children)
-      return true
+      return deleted
     }
 
     if (right) {
@@ -158,12 +159,12 @@ class Node<T, E extends Entry<T>> {
       const node = this.children.splice(index, 1)[0]
       right.entries.unshift(...node.entries, entry)
       right.children.unshift(...node.children)
-      return true
+      return deleted
     }
 
     this.entries = this.children[0].entries
     this.children = this.children[0].children
-    return true
+    return deleted
   }
 
   *range(s: T, e: T): IterableIterator<E> {
@@ -196,13 +197,15 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
 
   constructor(private readonly degree: number = 3) {}
 
-  insert(entry: E) {
-    const evicted = this.root.insert(entry, this.degree)
-    if (typeof evicted === "boolean") {
-      if (evicted) {
-        this.len += 1
-      }
-      return this
+  insert(entry: E): E | undefined {
+    const [evicted, prev] = this.root.insert(entry, this.degree)
+    if (prev) {
+      return prev
+    }
+
+    this.len += 1
+    if (!evicted) {
+      return
     }
 
     this.len += 1
@@ -211,34 +214,34 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
     newRoot.entries = [en]
     newRoot.children = [this.root, right]
     this.root = newRoot
-    return this
   }
 
   get(k: T): E | undefined {
     return this.root.get(k)
   }
 
-  delete(k: T) {
+  delete(k: T): E | undefined {
     if (this.len === 0) {
-      return false
+      return
     }
 
     const minKeys = Math.ceil(this.degree / 2) - 1
-    if (!this.root.delete(k, minKeys)) {
-      return false
+    const deleted = this.root.delete(k, minKeys)
+    if (!deleted) {
+      return
     }
 
     this.len -= 1
     if (this.root.entries.length > 0) {
-      return true
+      return deleted
     }
 
     if (this.root.isLeaf()) {
-      return true
+      return deleted
     }
 
     this.root = this.root.children[0]
-    return true
+    return deleted
   }
 
   clear() {
@@ -292,7 +295,7 @@ export class BTreeMap<K, V> implements Map<K, V> {
   }
 
   delete(k: K) {
-    return this.tree.delete(k)
+    return !!this.tree.delete(k)
   }
 
   clear() {
@@ -360,7 +363,7 @@ export class BTreeSet<T> implements Set<T> {
   }
 
   delete(v: T) {
-    return this.tree.delete(v)
+    return !!this.tree.delete(v)
   }
 
   clear() {
