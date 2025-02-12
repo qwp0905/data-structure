@@ -107,7 +107,7 @@ class Node<T, E extends Entry<T>> {
     return node.entries.splice(-1, 1, entry)[0]
   }
 
-  delete(k: T, minKeys: number): E | undefined {
+  delete(k: T, minKeys: number, maxKeys: number): E | undefined {
     const [index, found] = this.search(k)
     if (this.isLeaf()) {
       if (!found) {
@@ -122,7 +122,7 @@ class Node<T, E extends Entry<T>> {
       this.entries[index] = this.children[index].swapPredecessor(found)
     }
 
-    const deleted = this.children[index].delete(k, minKeys)
+    const deleted = this.children[index].delete(k, minKeys, maxKeys)
     if (!deleted) {
       return
     }
@@ -132,14 +132,15 @@ class Node<T, E extends Entry<T>> {
     }
 
     const left = this.children[index - 1]
-    if (left?.entries.length > minKeys) {
+    const right = this.children[index + 1]
+    if (left?.isLeaf() && left?.entries.length > minKeys) {
       const entry = this.entries[index - 1]
       this.children[index].entries.unshift(entry)
       this.entries[index - 1] = left.entries.pop()!
       return deleted
     }
-    const right = this.children[index + 1]
-    if (right?.entries.length > minKeys) {
+
+    if (right?.isLeaf() && right?.entries.length > minKeys) {
       const entry = this.entries[index]
       this.children[index].entries.push(entry)
       this.entries[index] = right.entries.shift()!
@@ -147,23 +148,31 @@ class Node<T, E extends Entry<T>> {
     }
 
     if (left) {
-      const entry = this.entries.splice(index - 1, 1)[0]
-      const node = this.children.splice(index, 1)[0]
+      const [entry] = this.entries.splice(index - 1, 1)
+      const [node] = this.children.splice(index, 1)
       left.entries.push(entry, ...node.entries)
       left.children.push(...node.children)
-    } else if (right) {
-      const entry = this.entries.splice(index, 1)[0]
-      const node = this.children.splice(index, 1)[0]
-      right.entries.unshift(...node.entries, entry)
-      right.children.unshift(...node.children)
-    }
+      if (left.entries.length < maxKeys) {
+        return deleted
+      }
 
-    if (this.entries.length >= minKeys) {
+      const [en, rn] = left.split()
+      this.entries.splice(index - 1, 0, en)
+      this.children.splice(index, 0, rn)
       return deleted
     }
 
-    // rebalance
+    const [entry] = this.entries.splice(index, 1)
+    const [node] = this.children.splice(index, 1)
+    right.entries.unshift(...node.entries, entry)
+    right.children.unshift(...node.children)
+    if (right.entries.length < maxKeys) {
+      return deleted
+    }
 
+    const [en, rn] = right.split()
+    this.entries.splice(index, 0, en)
+    this.children.splice(index + 1, 0, rn)
     return deleted
   }
 
@@ -226,7 +235,7 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
     }
 
     const minKeys = Math.ceil(this.degree / 2) - 1
-    const deleted = this.root.delete(k, minKeys)
+    const deleted = this.root.delete(k, minKeys, this.degree)
     if (!deleted) {
       return
     }
