@@ -151,19 +151,19 @@ class Node<T, E extends Entry<T>> {
       const node = this.children.splice(index, 1)[0]
       left.entries.push(entry, ...node.entries)
       left.children.push(...node.children)
-      return deleted
-    }
-
-    if (right) {
+    } else if (right) {
       const entry = this.entries.splice(index, 1)[0]
       const node = this.children.splice(index, 1)[0]
       right.entries.unshift(...node.entries, entry)
       right.children.unshift(...node.children)
+    }
+
+    if (this.entries.length >= minKeys) {
       return deleted
     }
 
-    this.entries = this.children[0].entries
-    this.children = this.children[0].children
+    // rebalance
+
     return deleted
   }
 
