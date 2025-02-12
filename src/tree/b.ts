@@ -131,16 +131,17 @@ class Node<T, E extends Entry<T>> {
       return deleted
     }
 
+    const isLeaf = this.children[index].isLeaf()
     const left = this.children[index - 1]
     const right = this.children[index + 1]
-    if (left?.isLeaf() && left?.entries.length > minKeys) {
+    if (isLeaf && left?.entries.length > minKeys) {
       const entry = this.entries[index - 1]
       this.children[index].entries.unshift(entry)
       this.entries[index - 1] = left.entries.pop()!
       return deleted
     }
 
-    if (right?.isLeaf() && right?.entries.length > minKeys) {
+    if (isLeaf && right?.entries.length > minKeys) {
       const entry = this.entries[index]
       this.children[index].entries.push(entry)
       this.entries[index] = right.entries.shift()!
