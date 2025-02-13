@@ -98,7 +98,7 @@ class Internal<T, E extends Entry<T>> {
     return this.keys[0]
   }
 
-  insert(entry: E, maxKeys: number): [T, Node<T, E>, E | null] | [null, null, E | null] {
+  insert(entry: E, maxKeys: number): [T | null, Node<T, E> | null, E | null] {
     const index = this.search(entry.key)
     const [top, node, inserted] = this.children[index].insert(entry, maxKeys)
     if (!node) {
@@ -327,14 +327,6 @@ class Node<T, E extends Entry<T>> {
       return this.leaf!.delete(k)
     } else {
       return this.internal!.delete(k, minKeys)
-    }
-  }
-
-  length() {
-    if (this.isLeaf()) {
-      return this.leaf!.entries.length
-    } else {
-      return this.internal!.keys.length
     }
   }
 
