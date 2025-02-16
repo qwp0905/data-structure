@@ -102,7 +102,7 @@ class Internal<T, E extends Entry<T>> {
     const index = this.search(entry.key)
     const [top, node, inserted] = this.children[index].insert(entry, maxKeys)
     if (!node) {
-      if (this.children[index].isLeaf() && index > 0) {
+      if (index > 0 && this.children[index].isLeaf()) {
         this.keys[index - 1] = this.children[index].leaf!.top()
       }
 
