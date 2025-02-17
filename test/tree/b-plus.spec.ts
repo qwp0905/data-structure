@@ -1,12 +1,7 @@
 import { BPlusTree, DefaultEntry } from "../../src/tree/b-plus"
 
-describe("BPlusTree", () => {
-  let tree: BPlusTree<number>
-
-  beforeEach(() => {
-    tree = new BPlusTree<number>()
-  })
-
+let tree: BPlusTree<number>
+function test() {
   it("should insert and get", () => {
     tree.insert(new DefaultEntry(1))
     tree.insert(new DefaultEntry(2))
@@ -188,5 +183,31 @@ describe("BPlusTree", () => {
     expect(result[0].key).toBe(2)
     expect(result[1].key).toBe(3)
     expect(result[2].key).toBe(4)
+  })
+}
+
+describe("BPlusTree", () => {
+  describe("degree 3", () => {
+    beforeEach(() => {
+      tree = new BPlusTree<number>()
+    })
+
+    test()
+  })
+
+  describe("degree 5", () => {
+    beforeEach(() => {
+      tree = new BPlusTree<number>(5)
+    })
+
+    test()
+  })
+
+  describe("degree 4", () => {
+    beforeEach(() => {
+      tree = new BPlusTree<number>(4)
+    })
+
+    test()
   })
 })

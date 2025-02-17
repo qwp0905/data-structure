@@ -139,7 +139,7 @@ class Internal<T, E extends Entry<T>> {
   getPredecessor() {
     let node = this as Internal<T, E>
     while (!node.children[0].isLeaf()) {
-      node = node.children[node.children.length - 1].internal!
+      node = node.children[0].internal!
     }
     return node.children[0].leaf!.top()
   }
