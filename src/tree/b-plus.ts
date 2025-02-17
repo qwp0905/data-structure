@@ -136,7 +136,7 @@ class Internal<T, E extends Entry<T>> {
     return this.children[index].has(k)
   }
 
-  getPredecessor() {
+  getSuccessor() {
     let node = this as Internal<T, E>
     while (!node.children[0].isLeaf()) {
       node = node.children[0].internal!
@@ -204,7 +204,7 @@ class Internal<T, E extends Entry<T>> {
     }
 
     if (found) {
-      this.keys[index - 1] = internal.getPredecessor()
+      this.keys[index - 1] = internal.getSuccessor()
     }
     if (internal.keys.length >= minKeys) {
       return deleted
