@@ -6,9 +6,10 @@ export class DefaultEntry<T> implements Entry<T> {
   constructor(readonly key: T) {}
 }
 
+const next = Symbol()
 class Leaf<T, E extends Entry<T>> {
-  entries: E[] = []
-  next: Leaf<T, E> | null = null
+  entries: E[] = [];
+  [next]: Leaf<T, E> | null = null
 
   search(k: T): [number, boolean] {
     let left = 0
@@ -46,8 +47,8 @@ class Leaf<T, E extends Entry<T>> {
     const mid = Math.floor(this.entries.length / 2)
     const node = new Leaf<T, E>()
     node.entries = this.entries.splice(mid)
-    node.next = this.next
-    this.next = node
+    node[next] = this[next]
+    this[next] = node
     return [node.top(), Node.leaf(node), null]
   }
 
@@ -177,14 +178,14 @@ class Internal<T, E extends Entry<T>> {
 
       if (left) {
         left.entries.push(...leaf.entries)
-        left.next = leaf.next
+        left[next] = leaf[next]
         this.keys.splice(index - 1, 1)
         this.children.splice(index, 1)
         return deleted
       }
       if (right) {
         leaf.entries.push(...right.entries)
-        leaf.next = right.next
+        leaf[next] = right[next]
         this.keys.splice(index, 1)
         this.children.splice(index + 1, 1)
         return deleted
@@ -266,7 +267,7 @@ class Cursor<T, E extends Entry<T>> implements IterableIterator<E> {
 
   next(): IteratorResult<E> {
     if (this.index === this.current!.entries.length) {
-      this.current = this.current!.next
+      this.current = this.current![next]
       this.index = 0
     }
 
@@ -408,7 +409,7 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
       node = node.internal!.children[0]
     }
 
-    for (let leaf: Leaf<T, E> | null = node.leaf; !!leaf; leaf = leaf.next) {
+    for (let leaf: Leaf<T, E> | null = node.leaf; !!leaf; leaf = leaf[next]) {
       yield* leaf.entries
     }
   }
