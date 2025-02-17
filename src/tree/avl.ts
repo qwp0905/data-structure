@@ -138,6 +138,19 @@ class Node<T, E extends Entry<T>> {
       yield* this.right.entries()
     }
   }
+
+  *range(s: T, e: T): IterableIterator<E> {
+    if (s > this.entry.key || e <= this.entry.key) {
+      return
+    }
+    if (this.left && s < this.entry.key) {
+      yield* this.left.range(s, this.entry.key)
+    }
+    yield this.entry
+    if (e > this.entry.key && this.right) {
+      yield* this.right.range(this.entry.key, e)
+    }
+  }
 }
 
 export class AVLTree<T, E extends Entry<T> = Entry<T>> {
@@ -193,5 +206,12 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
       return
     }
     yield* this.root.entries()
+  }
+
+  *range(s: T, e: T) {
+    if (!this.root) {
+      return
+    }
+    yield* this.root.range(s, e)
   }
 }
