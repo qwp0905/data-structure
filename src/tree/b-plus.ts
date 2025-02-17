@@ -153,7 +153,9 @@ class Internal<T, E extends Entry<T>> {
       }
 
       if (leaf.entries.length >= minKeys) {
-        this.keys[index - 1] = leaf.top()
+        if (index > 0) {
+          this.keys[index - 1] = leaf.top()
+        }
         return deleted
       }
 
