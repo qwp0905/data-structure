@@ -32,7 +32,9 @@
     "editor.insertSpaces": true,
     "editor.tabSize": 2,
     "editor.autoIndent": "keep",
-    "gitlens.codeLens.scopes": ["document"],
+    "gitlens.codeLens.scopes": [
+      "document"
+    ],
     "editor.quickSuggestions": {
       "other": true,
       "comments": false,
@@ -54,5 +56,11 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "code-runner.executorMap": {
     "typescript": "yarn ts-node"
-  }
+  },
+  "jest.runMode": {
+    "type": "watch",
+    "coverage": true,
+    "runAllTestsOnStartup": true
+  },
+  "jest.enable": true,
 }

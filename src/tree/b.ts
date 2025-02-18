@@ -39,7 +39,7 @@ class Node<T, E extends Entry<T>> {
       } else if (k > entry.key) {
         left = mid + 1
       } else {
-        return [mid, this.entries[left]]
+        return [mid, this.entries[mid]]
       }
     }
 

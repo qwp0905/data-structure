@@ -285,8 +285,8 @@ class Cursor<T, E extends Entry<T>> implements IterableIterator<E> {
 }
 class Node<T, E extends Entry<T>> {
   constructor(
-    public internal: Internal<T, E> | null = null,
-    public leaf: Leaf<T, E> | null = null
+    public internal: Internal<T, E> | null,
+    public leaf: Leaf<T, E> | null
   ) {}
 
   static leaf<T, E extends Entry<T>>(leaf: Leaf<T, E>) {

@@ -2,7 +2,8 @@
   "name": "data-structure",
   "packageManager": "yarn@4.6.0",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test:cov": "jest --coverage"
   },
   "jest": {
     "moduleFileExtensions": [
