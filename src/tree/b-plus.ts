@@ -136,7 +136,7 @@ class Internal<T, E extends Entry<T>> {
     return this.children[index].has(k)
   }
 
-  getSuccessor() {
+  private getSuccessor() {
     let node = this as Internal<T, E>
     while (!node.children[0].isLeaf()) {
       node = node.children[0].internal!
