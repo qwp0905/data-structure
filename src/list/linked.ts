@@ -94,5 +94,13 @@ export class DoubleLinkedList<T> implements Iterable<T> {
     }
   }
 
+  *reverse() {
+    let current = this.tail
+    while (current !== null) {
+      yield current.value
+      current = current.prev
+    }
+  }
+
   readonly [Symbol.iterator] = this.values
 }
