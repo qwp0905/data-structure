@@ -60,4 +60,28 @@ export class Trie {
 
     return false
   }
+
+  *search(prefix: string): IterableIterator<string> {
+    if (!prefix.startsWith(this.word)) {
+      return
+    }
+    if (prefix === this.word) {
+      yield* this.collect()
+      return
+    }
+
+    for (const child of this.children) {
+      yield* child.search(prefix)
+    }
+  }
+
+  private *collect(): IterableIterator<string> {
+    if (this.isWord) {
+      yield this.word
+    }
+
+    for (const child of this.children) {
+      yield* child.collect()
+    }
+  }
 }
