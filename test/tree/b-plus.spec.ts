@@ -201,6 +201,22 @@ function test() {
     expect(result[1].key).toBe(3)
     expect(result[2].key).toBe(4)
   })
+
+  it("should iterate in order with range 2", () => {
+    for (let i = 100; i > 0; i -= 2) {
+      tree.insert(new DefaultEntry(i))
+    }
+
+    expect(tree.delete(56)?.key).toBe(56)
+    expect(tree.delete(32)?.key).toBe(32)
+    expect(tree.delete(96)?.key).toBe(96)
+
+    const result = [...tree.range(30, 70)]
+    expect(result).toHaveLength(18)
+    expect(result.map((e) => e.key)).toEqual([
+      30, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 58, 60, 62, 64, 66, 68
+    ])
+  })
 }
 
 describe("BPlusTree", () => {
