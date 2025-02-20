@@ -109,9 +109,9 @@ class Node<T, E extends Entry<T>> {
         return [this.rebalance(), entry]
       }
 
-      const succ = this.right!.getSuccessor()
-      this.entry = succ.entry
-      const [node] = this.right!.delete(succ.entry.key)
+      const suc = this.right!.getSuccessor()
+      this.entry = suc.entry
+      const [node] = this.right!.delete(suc.entry.key)
       this.right = node
       this.height = (this.right?.height ?? 0) + 1
       return [this.rebalance(), entry]
