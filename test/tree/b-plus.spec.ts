@@ -171,6 +171,23 @@ function test() {
     expect(result[5].key).toBe(6)
   })
 
+  it("should iterate in order 2", () => {
+    for (let i = 100; i > 0; i -= 2) {
+      tree.insert(new DefaultEntry(i))
+    }
+
+    expect(tree.delete(56)?.key).toBe(56)
+    expect(tree.delete(32)?.key).toBe(32)
+    expect(tree.delete(96)?.key).toBe(96)
+
+    const result = [...tree.entries()]
+    expect(result).toHaveLength(47)
+    expect(result.map((e) => e.key)).toEqual([
+      2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34, 36, 38, 40, 42, 44, 46, 48, 50,
+      52, 54, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 98, 100
+    ])
+  })
+
   it("should iterate in order with range", () => {
     tree.insert(new DefaultEntry(3))
     tree.insert(new DefaultEntry(1))
