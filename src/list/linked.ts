@@ -1,12 +1,12 @@
-class Node<T> {
-  prev: Node<T> | null = null
-  next: Node<T> | null = null
+export class DoubleLinkedNode<T> {
+  prev: DoubleLinkedNode<T> | null = null
+  next: DoubleLinkedNode<T> | null = null
   constructor(readonly value: T) {}
 }
 
 export class DoubleLinkedList<T> implements Iterable<T> {
-  private head: Node<T> | null = null
-  private tail: Node<T> | null = null
+  private head: DoubleLinkedNode<T> | null = null
+  private tail: DoubleLinkedNode<T> | null = null
   private len = 0
 
   constructor(iterable?: Iterable<T>) {
@@ -22,8 +22,27 @@ export class DoubleLinkedList<T> implements Iterable<T> {
     return this.len
   }
 
+  moveBack(node: DoubleLinkedNode<T>) {
+    if (node === this.tail) {
+      return
+    }
+
+    if (node === this.head) {
+      this.head = this.head.next
+      this.head!.prev = null
+    } else {
+      node.prev!.next = node.next
+      node.next!.prev = node.prev
+    }
+
+    this.tail!.next = node
+    node.prev = this.tail
+    node.next = null
+    this.tail = node
+  }
+
   pushBack(value: T): void {
-    const node = new Node(value)
+    const node = new DoubleLinkedNode(value)
     if (this.len === 0) {
       this.head = node
     } else {
@@ -55,7 +74,7 @@ export class DoubleLinkedList<T> implements Iterable<T> {
   }
 
   pushFront(value: T): void {
-    const node = new Node(value)
+    const node = new DoubleLinkedNode(value)
     if (this.len === 0) {
       this.tail = node
     } else {
@@ -64,6 +83,25 @@ export class DoubleLinkedList<T> implements Iterable<T> {
     }
     this.head = node
     this.len++
+  }
+
+  moveFront(node: DoubleLinkedNode<T>) {
+    if (node === this.head) {
+      return
+    }
+
+    if (node === this.tail) {
+      this.tail = this.tail.prev
+      this.tail!.next = null
+    } else {
+      node.prev!.next = node.next
+      node.next!.prev = node.prev
+    }
+
+    this.head!.prev = node
+    node.next = this.head
+    node.prev = null
+    this.head = node
   }
 
   popFront(): T | undefined {
