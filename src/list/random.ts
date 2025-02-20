@@ -7,9 +7,11 @@ export class RandomArray<T> extends Array<T> {
         continue
       }
       const randomIndex = Math.floor(Math.random() * (i + 1))
-      if (randomIndex < count) {
-        result[randomIndex] = this.at(i)!
+      if (randomIndex >= count) {
+        continue
       }
+
+      result[randomIndex] = this.at(i)!
     }
     yield* result
   }
