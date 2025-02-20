@@ -78,10 +78,45 @@ class Node<T, E extends Entry<T>> {
     return this.rotateRight()
   }
 
+  private getPredecessor() {
+    let node = this as Node<T, E>
+    while (node?.right) {
+      node = node.right
+    }
+    return node
+  }
+  private getSuccessor() {
+    let node = this as Node<T, E>
+    while (node?.left) {
+      node = node.left
+    }
+    return node
+  }
+
   delete(k: T): [Node<T, E> | null, E | null] {
     if (k === this.entry.key) {
-      return [null, this.entry]
+      if (!this.left && !this.right) {
+        return [null, this.entry]
+      }
+
+      const entry = this.entry
+      if (this.left) {
+        const pred = this.left.getPredecessor()
+        this.entry = pred.entry
+        const [node] = this.left.delete(pred.entry.key)
+        this.left = node
+        this.height = Math.max(this.left?.height ?? 0, this.right?.height ?? 0) + 1
+        return [this.rebalance(), entry]
+      }
+
+      const succ = this.right!.getSuccessor()
+      this.entry = succ.entry
+      const [node] = this.right!.delete(succ.entry.key)
+      this.right = node
+      this.height = (this.right?.height ?? 0) + 1
+      return [this.rebalance(), entry]
     }
+
     if (k < this.entry.key) {
       if (!this.left) {
         return [null, null]
@@ -140,15 +175,14 @@ class Node<T, E extends Entry<T>> {
   }
 
   *range(s: T, e: T): IterableIterator<E> {
-    if (s > this.entry.key || e <= this.entry.key) {
-      return
-    }
     if (this.left && s < this.entry.key) {
-      yield* this.left.range(s, this.entry.key)
+      yield* this.left.range(s, e)
     }
-    yield this.entry
+    if (s <= this.entry.key && e > this.entry.key) {
+      yield this.entry
+    }
     if (e > this.entry.key && this.right) {
-      yield* this.right.range(this.entry.key, e)
+      yield* this.right.range(s, e)
     }
   }
 }
