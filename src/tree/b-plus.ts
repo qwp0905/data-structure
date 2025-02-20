@@ -95,10 +95,6 @@ class Internal<T, E extends Entry<T>> {
     return left
   }
 
-  top() {
-    return this.keys[0]
-  }
-
   insert(entry: E, maxKeys: number): [T | null, Node<T, E> | null, E | null] {
     const index = this.search(entry.key)
     const [top, node, inserted] = this.children[index].insert(entry, maxKeys)
@@ -183,16 +179,11 @@ class Internal<T, E extends Entry<T>> {
         this.children.splice(index, 1)
         return deleted
       }
-      if (right) {
-        leaf.entries.push(...right.entries)
-        leaf[next] = right[next]
-        this.keys.splice(index, 1)
-        this.children.splice(index + 1, 1)
-        return deleted
-      }
 
-      this.keys = this.children[0].leaf!.entries.map((entry) => entry.key)
-      this.children = [this.children[0]]
+      leaf.entries.push(...right!.entries)
+      leaf[next] = right![next]
+      this.keys.splice(index, 1)
+      this.children.splice(index + 1, 1)
       return deleted
     }
 
@@ -239,17 +230,11 @@ class Internal<T, E extends Entry<T>> {
       return deleted
     }
 
-    if (right) {
-      internal.keys.push(this.keys[index])
-      internal.keys.push(...right.keys)
-      internal.children.push(...right.children)
-      this.keys.splice(index, 1)
-      this.children.splice(index + 1, 1)
-      return deleted
-    }
-
-    this.keys = internal.keys
-    this.children = internal.children
+    internal.keys.push(this.keys[index])
+    internal.keys.push(...right!.keys)
+    internal.children.push(...right!.children)
+    this.keys.splice(index, 1)
+    this.children.splice(index + 1, 1)
     return deleted
   }
 }

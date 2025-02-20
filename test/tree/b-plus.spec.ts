@@ -11,12 +11,41 @@ function test() {
     expect(tree.get(3)?.key).toBe(3)
   })
 
+  it("should insert and overwrite", () => {
+    class E {
+      constructor(
+        public key: number,
+        public value: string
+      ) {}
+    }
+    tree.insert(new E(1, "a"))
+    tree.insert(new E(1, "b"))
+    expect(tree.get(1)).toEqual(new E(1, "b"))
+  })
+
   it("should delete", () => {
     tree.insert(new DefaultEntry(1))
     tree.insert(new DefaultEntry(2))
     tree.insert(new DefaultEntry(3))
     expect(tree.delete(2)?.key).toBe(2)
     expect(tree.get(2)).toBeUndefined()
+  })
+
+  it("should delete and return undefined if not found", () => {
+    tree.insert(new DefaultEntry(1))
+    tree.insert(new DefaultEntry(2))
+    tree.insert(new DefaultEntry(3))
+    tree.insert(new DefaultEntry(4))
+    tree.insert(new DefaultEntry(5))
+    tree.insert(new DefaultEntry(6))
+    tree.insert(new DefaultEntry(7))
+    tree.insert(new DefaultEntry(8))
+    tree.insert(new DefaultEntry(9))
+    tree.insert(new DefaultEntry(10))
+
+    expect(tree.delete(2323)).toBeUndefined()
+    expect(tree.get(2323)).toBeUndefined()
+    expect(tree.delete(45364)).toBeUndefined()
   })
 
   it("should return undefined if not found", () => {
@@ -31,6 +60,30 @@ function test() {
 
   it("should return false if not has", () => {
     expect(tree.has(1)).toBe(false)
+  })
+
+  it("should return false if not has after delete", () => {
+    tree.insert(new DefaultEntry(1))
+    tree.insert(new DefaultEntry(100))
+    tree.insert(new DefaultEntry(50))
+    tree.insert(new DefaultEntry(25))
+    tree.insert(new DefaultEntry(75))
+    tree.insert(new DefaultEntry(150))
+    tree.insert(new DefaultEntry(125))
+    tree.insert(new DefaultEntry(175))
+    tree.delete(100)
+    tree.delete(50)
+    tree.delete(25)
+    tree.delete(75)
+    expect(tree.has(100)).toBe(false)
+    expect(tree.has(50)).toBe(false)
+    expect(tree.has(25)).toBe(false)
+    expect(tree.has(75)).toBe(false)
+    expect(tree.has(1)).toBe(true)
+    expect(tree.has(150)).toBe(true)
+    expect(tree.has(125)).toBe(true)
+    expect(tree.has(175)).toBe(true)
+    expect(tree.length).toBe(4)
   })
 
   it("should insert and split", () => {
@@ -124,6 +177,68 @@ function test() {
     }
   })
 
+  it("should borrow from left when delete", () => {
+    tree.insert(new DefaultEntry(11))
+    tree.insert(new DefaultEntry(10))
+    tree.insert(new DefaultEntry(9))
+    tree.insert(new DefaultEntry(8))
+    tree.insert(new DefaultEntry(7))
+    tree.insert(new DefaultEntry(6))
+    tree.insert(new DefaultEntry(5))
+    tree.insert(new DefaultEntry(4))
+    tree.insert(new DefaultEntry(3))
+    tree.insert(new DefaultEntry(2))
+    tree.insert(new DefaultEntry(1))
+    tree.delete(9)
+    tree.delete(8)
+    tree.delete(6)
+    tree.delete(7)
+    tree.insert(new DefaultEntry(9))
+    tree.insert(new DefaultEntry(8))
+    tree.delete(11)
+
+    expect(tree.get(1)?.key).toBe(1)
+    expect(tree.get(2)?.key).toBe(2)
+    expect(tree.get(3)?.key).toBe(3)
+    expect(tree.get(4)?.key).toBe(4)
+    expect(tree.get(5)?.key).toBe(5)
+    expect(tree.get(6)).toBeUndefined()
+    expect(tree.get(7)).toBeUndefined()
+    expect(tree.get(8)?.key).toBe(8)
+    expect(tree.get(9)?.key).toBe(9)
+    expect(tree.get(10)?.key).toBe(10)
+    expect(tree.get(11)).toBeUndefined()
+  })
+
+  it("should borrow from right when delete", () => {
+    tree.insert(new DefaultEntry(1))
+    tree.insert(new DefaultEntry(2))
+    tree.insert(new DefaultEntry(3))
+    tree.insert(new DefaultEntry(4))
+    tree.insert(new DefaultEntry(5))
+    tree.insert(new DefaultEntry(6))
+    tree.insert(new DefaultEntry(7))
+    tree.insert(new DefaultEntry(8))
+    tree.insert(new DefaultEntry(9))
+    tree.insert(new DefaultEntry(10))
+    tree.insert(new DefaultEntry(11))
+    tree.delete(3)
+    tree.delete(1)
+    tree.delete(10)
+    tree.delete(11)
+    expect(tree.get(1)).toBeUndefined()
+    expect(tree.get(2)?.key).toBe(2)
+    expect(tree.get(3)).toBeUndefined()
+    expect(tree.get(4)?.key).toBe(4)
+    expect(tree.get(5)?.key).toBe(5)
+    expect(tree.get(6)?.key).toBe(6)
+    expect(tree.get(7)?.key).toBe(7)
+    expect(tree.get(8)?.key).toBe(8)
+    expect(tree.get(9)?.key).toBe(9)
+    expect(tree.get(10)).toBeUndefined()
+    expect(tree.get(11)).toBeUndefined()
+  })
+
   it("should range", () => {
     tree.insert(new DefaultEntry(1))
     tree.insert(new DefaultEntry(2))
@@ -135,6 +250,22 @@ function test() {
     expect(result).toHaveLength(2)
     expect(result[0].key).toBe(3)
     expect(result[1].key).toBe(4)
+  })
+
+  it("should range 2", () => {
+    tree.insert(new DefaultEntry(1))
+    tree.insert(new DefaultEntry(2))
+    tree.insert(new DefaultEntry(3))
+    tree.insert(new DefaultEntry(4))
+    tree.insert(new DefaultEntry(5))
+    tree.insert(new DefaultEntry(6))
+    const result = [...tree.range(2, 10)]
+    expect(result).toHaveLength(5)
+    expect(result[0].key).toBe(2)
+    expect(result[1].key).toBe(3)
+    expect(result[2].key).toBe(4)
+    expect(result[3].key).toBe(5)
+    expect(result[4].key).toBe(6)
   })
 
   it("should iterate", () => {
