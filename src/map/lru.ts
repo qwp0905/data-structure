@@ -60,9 +60,13 @@ export class LRUCache<K, V> {
 }
 
 function sizeof<K, V>(node: DoubleLinkedNode<CacheEntry<K, V>>) {
-  const cal = getCalculator(new WeakSet())
+  const calculate = getCalculator(new WeakSet())
   return (
-    cal(node.value) + ((node.next && 8) || 0) + ((node.prev && 8) || 0) + cal(node.value.key) + 8
+    calculate(node.value) +
+    ((node.next && 8) || 0) +
+    ((node.prev && 8) || 0) +
+    calculate(node.value.key) +
+    8
   )
 }
 
