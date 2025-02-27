@@ -215,6 +215,9 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
 
       node = node.next
     }
+    if (deleted) {
+      this.len -= 1
+    }
     return deleted
   }
 }
