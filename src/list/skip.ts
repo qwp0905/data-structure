@@ -43,6 +43,7 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
   private head = new Node<T, E>()
   private tail = new Node<T, E>()
   private height = 1
+  private len = 0
   constructor(private readonly maxHeight: number = Infinity) {
     this.head.next = this.tail
     this.tail.prev = this.head
@@ -92,52 +93,13 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     }
   }
 
-  insert(entry: E) {
-    let node: Node<T, E> = this.head
-    while (!!node.bottom || node.next!.getKey()! <= entry.key) {
-      if (node.getKey() === entry.key) {
-        return node.setEntry(entry)
-      }
+  get length(): number {
+    return this.len
+  }
 
-      if (!node.next!.isEnd() && node.next!.getKey()! <= entry.key) {
-        node = node.next!
-        continue
-      }
-
-      node = node.bottom!
-    }
-
+  insert(entry: E): E | undefined {
     const height = this.randomHeight()
-    let prev: Node<T, E> = node
-    let next: Node<T, E> = node.next!
-    let bottom: Node<T, E> | null = null
-    const ref = new Ref(entry)
-    for (let i = 1; i <= height; i += 1) {
-      const newNode = new Node<T, E>(ref)
-      newNode.prev = prev
-      prev.next = newNode
-      newNode.next = next
-      next.prev = newNode
-      newNode.bottom = bottom
-      if (!!bottom) {
-        bottom.top = newNode
-      }
-
-      bottom = newNode
-
-      while (!prev.top && !prev.isEnd()) {
-        prev = prev.prev!
-      }
-      while (!next.top && !next.isEnd()) {
-        next = next.next!
-      }
-
-      if (prev.top && next.top) {
-        prev = prev.top
-        next = next.top
-        continue
-      }
-
+    while (this.height <= height) {
       const newHead = new Node<T, E>()
       const newTail = new Node<T, E>()
       newHead.next = newTail
@@ -148,12 +110,46 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
       this.tail.top = newTail
       this.head = newHead
       this.tail = newTail
-      prev.top = newHead
-      next.top = newTail
-      prev = newHead
-      next = newTail
       this.height += 1
     }
+
+    const ref = new Ref(entry)
+
+    let left: Node<T, E> | null = this.head.bottom
+    let right: Node<T, E> | null = this.tail.bottom
+    let top: Node<T, E> | null = null
+    while (!!left && !!right) {
+      while (!left.next!.isEnd() && left.next!.getKey()! <= ref.entry.key) {
+        left = left.next!
+      }
+
+      while (!right.prev!.isEnd() && right.prev!.getKey()! >= ref.entry.key) {
+        right = right.prev!
+      }
+
+      if (left.getKey() === ref.entry.key) {
+        return left.setEntry(ref.entry)
+      }
+
+      if (right.getKey() === ref.entry.key) {
+        return right.setEntry(ref.entry)
+      }
+
+      const newNode = new Node<T, E>(ref)
+      newNode.prev = left
+      left.next = newNode
+      newNode.next = right
+      right.prev = newNode
+      newNode.top = top
+      if (!!top) {
+        top.bottom = newNode
+      }
+
+      top = newNode
+      left = left.bottom
+      right = right.bottom
+    }
+    this.len += 1
   }
 
   *entries(): IterableIterator<E> {

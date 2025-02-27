@@ -1,0 +1,35 @@
+import { SkipList } from "../../src/list/skip"
+
+describe("SkipList", () => {
+  let list: SkipList<number>
+
+  beforeEach(() => {
+    list = new SkipList()
+  })
+
+  it("should insert", () => {
+    expect(list.insert({ key: 1 })).toBeUndefined()
+    expect(list.insert({ key: 2 })).toBeUndefined()
+    expect(list.insert({ key: 3 })).toBeUndefined()
+    expect(list.insert({ key: 4 })).toBeUndefined()
+    expect(list.insert({ key: 5 })).toBeUndefined()
+    expect(list.insert({ key: 6 })).toBeUndefined()
+    expect(list.insert({ key: 7 })).toBeUndefined()
+    expect(list.insert({ key: 8 })).toBeUndefined()
+    expect(list.insert({ key: 9 })).toBeUndefined()
+    expect(list.insert({ key: 10 })).toBeUndefined()
+
+    expect(list.get(1)).toEqual({ key: 1 })
+    expect(list.get(2)).toEqual({ key: 2 })
+    expect(list.get(3)).toEqual({ key: 3 })
+    expect(list.get(4)).toEqual({ key: 4 })
+    expect(list.get(5)).toEqual({ key: 5 })
+    expect(list.get(6)).toEqual({ key: 6 })
+    expect(list.get(7)).toEqual({ key: 7 })
+    expect(list.get(8)).toEqual({ key: 8 })
+    expect(list.get(9)).toEqual({ key: 9 })
+    expect(list.get(10)).toEqual({ key: 10 })
+    expect(list.get(11)).toBeUndefined()
+    expect(list.length).toBe(10)
+  })
+})
