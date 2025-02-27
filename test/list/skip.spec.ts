@@ -137,4 +137,16 @@ describe("SkipList", () => {
       }
     }
   })
+
+  it("should iterate", () => {
+    for (let i = 100; i >= 1; i--) {
+      expect(list.insert({ key: i })).toBeUndefined()
+    }
+
+    let i = 1
+    for (const entry of list.entries()) {
+      expect(entry).toEqual({ key: i })
+      i++
+    }
+  })
 })

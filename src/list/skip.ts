@@ -18,11 +18,8 @@ class Node<T, E extends Entry<T>> {
   }
 
   setEntry(entry: E) {
-    if (!this.ref) {
-      return
-    }
-    const prev = this.ref.entry
-    this.ref.entry = entry
+    const prev = this.ref!.entry
+    this.ref!.entry = entry
     return prev
   }
 
