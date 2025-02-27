@@ -7,27 +7,27 @@ class Node<T, E extends Entry<T>> {
   bottom: Node<T, E> | null = null
   top: Node<T, E> | null = null
   prev: Node<T, E> | null = null
-  constructor(readonly tower: Tower<T, E> | null = null) {}
+  constructor(readonly ref: Ref<T, E> | null = null) {}
 
   getKey() {
-    return this.tower?.entry.key
+    return this.ref?.entry.key
   }
 
   getEntry() {
-    return this.tower?.entry
+    return this.ref?.entry
   }
 
   setEntry(entry: E) {
-    if (!this.tower) {
+    if (!this.ref) {
       return
     }
-    const prev = this.tower.entry
-    this.tower.entry = entry
+    const prev = this.ref.entry
+    this.ref.entry = entry
     return prev
   }
 
   isEnd() {
-    return !this.tower
+    return !this.ref
   }
 
   isBottom() {
@@ -35,7 +35,7 @@ class Node<T, E extends Entry<T>> {
   }
 }
 
-class Tower<T, E extends Entry<T>> {
+class Ref<T, E extends Entry<T>> {
   constructor(public entry: E) {}
 }
 
@@ -111,9 +111,9 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     let prev: Node<T, E> = node
     let next: Node<T, E> = node.next!
     let bottom: Node<T, E> | null = null
-    const tower = new Tower(entry)
+    const ref = new Ref(entry)
     for (let i = 1; i <= height; i += 1) {
-      const newNode = new Node<T, E>(tower)
+      const newNode = new Node<T, E>(ref)
       newNode.prev = prev
       prev.next = newNode
       newNode.next = next
