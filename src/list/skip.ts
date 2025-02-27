@@ -57,24 +57,6 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     return height
   }
 
-  print() {
-    let node = this.head
-    while (node.bottom) {
-      node = node.bottom
-    }
-
-    const list: (T | undefined)[][] = []
-    while (!!node) {
-      for (let i = this.height - 1, c: Node<T, E> | null = node; i >= 0; i--, c = c?.top ?? null) {
-        list[i] ??= []
-        list[i].push(c?.getKey())
-      }
-
-      node = node.next!
-    }
-    console.log(list.map((e) => e.map((o) => `${o}   `.slice(0, 3)).join(" -> ")).join("\n"))
-  }
-
   get(k: T): E | undefined {
     let node: Node<T, E> | null = this.head
     while (node) {
@@ -110,6 +92,9 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
       if (!node.next!.isEnd() && node.next!.getKey()! <= entry.key) {
         node = node.next!
         continue
+      }
+      if (node.isBottom()) {
+        break
       }
 
       node = node.bottom!

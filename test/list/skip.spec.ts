@@ -113,4 +113,28 @@ describe("SkipList", () => {
     expect(list.delete(11)).toBeUndefined()
     expect(list.length).toBe(0)
   })
+
+  it("should insert and delete at many key", () => {
+    for (let i = 100; i >= 1; i--) {
+      expect(list.insert({ key: i })).toBeUndefined()
+    }
+
+    for (let i = 1; i <= 100; i++) {
+      expect(list.get(i)).toEqual({ key: i })
+    }
+    expect(list.length).toBe(100)
+
+    const delete_list = [9, 2, 1, 5, 89, 23]
+    for (const key of delete_list) {
+      expect(list.delete(key)).toEqual({ key })
+    }
+
+    for (let i = 1; i <= 100; i++) {
+      if (delete_list.includes(i)) {
+        expect(list.get(i)).toBeUndefined()
+      } else {
+        expect(list.get(i)).toEqual({ key: i })
+      }
+    }
+  })
 })
