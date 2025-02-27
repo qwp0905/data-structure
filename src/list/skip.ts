@@ -155,4 +155,17 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
       this.height += 1
     }
   }
+
+  *entries(): IterableIterator<E> {
+    let node = this.head
+    while (node.bottom) {
+      node = node.bottom!
+    }
+
+    node = node.next!
+    while (!node.isEnd()) {
+      yield node.getEntry()!
+      node = node.next!
+    }
+  }
 }
