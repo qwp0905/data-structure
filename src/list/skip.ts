@@ -47,8 +47,9 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
   }
 
   private randomHeight() {
+    const max = Math.min(this.maxHeight, this.height)
     let height = 1
-    while (height < this.height && Math.random() < 0.5) {
+    while (height < max && Math.random() < 0.5) {
       height += 1
     }
     return height
