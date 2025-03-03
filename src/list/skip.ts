@@ -102,22 +102,8 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
 
       node = node.bottom
     }
-
-    while (node.next?.hasValue()) {
-      if (node.getKey() === entry.key) {
-        return node.setEntry(entry)
-      }
-
-      if (node.next.getKey()! <= entry.key) {
-        node = node.next
-        continue
-      }
-
-      if (!node.hasBottom()) {
-        break
-      }
-
-      node = node.bottom
+    while (node.next?.hasValue() && node.next.getKey()! <= entry.key) {
+      node = node.next
     }
 
     if (node.getKey() === entry.key) {
@@ -183,6 +169,32 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     while (node.hasValue()) {
       yield node.getEntry()!
       node = node.next!
+    }
+  }
+
+  *range(s: T, e: T): IterableIterator<E> {
+    let node: Node<T, E> = this.head
+    while (node.hasBottom()) {
+      if (node.getKey() === s) {
+        node = node.bottom
+        continue
+      }
+
+      if (node.next?.hasValue() && node.next.getKey()! <= s) {
+        node = node.next
+        continue
+      }
+
+      node = node.bottom
+    }
+
+    while (node.getKey()! < s && node.next?.hasValue()) {
+      node = node.next
+    }
+
+    while (node.getKey()! < e && node.next?.hasValue()) {
+      yield node.getEntry()!
+      node = node.next
     }
   }
 

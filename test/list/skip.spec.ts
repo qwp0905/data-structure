@@ -60,6 +60,7 @@ describe("SkipList", () => {
     expect(list.insert({ key: 10 })).toBeUndefined()
     expect(list.length).toBe(10)
     expect(list.insert({ key: 5 })).toEqual({ key: 5 })
+    expect(list.insert({ key: 1 })).toEqual({ key: 1 })
 
     expect(list.get(1)).toEqual({ key: 1 })
     expect(list.get(2)).toEqual({ key: 2 })
@@ -171,6 +172,62 @@ describe("SkipList", () => {
     for (const entry of list.entries()) {
       expect(entry).toEqual({ key: i })
       i++
+    }
+  })
+
+  it("should iterate 2", () => {
+    for (let i = 1; i <= 100; i++) {
+      expect(list.insert({ key: i })).toBeUndefined()
+    }
+
+    let i = 1
+    for (const entry of list.entries()) {
+      expect(entry).toEqual({ key: i })
+      i++
+    }
+  })
+
+  it("should iterate with delete", () => {
+    for (let i = 1; i <= 100; i++) {
+      expect(list.insert({ key: i })).toBeUndefined()
+    }
+
+    let i = 1
+    for (const entry of list.entries()) {
+      expect(entry).toEqual({ key: i })
+      i++
+    }
+
+    const delete_list = [9, 2, 1, 5, 89, 23]
+    for (const key of delete_list) {
+      expect(list.delete(key)).toEqual({ key })
+    }
+
+    const l = new Array(100)
+      .fill(null)
+      .map((_, i) => ({ key: i + 1 }))
+      .filter(({ key }) => !delete_list.includes(key))
+    let i2 = 0
+    for (const entry of list.entries()) {
+      expect(entry).toEqual(l[i2++])
+    }
+  })
+
+  it("should range", () => {
+    for (let i = 1; i <= 100; i++) {
+      expect(list.insert({ key: i })).toBeUndefined()
+    }
+
+    const l = new Array(10).fill(null).map((_, i) => ({ key: i + 10 }))
+    let i = 0
+    for (const e of list.range(10, 20)) {
+      expect(e).toEqual(l[i++])
+    }
+
+    i = 0
+    const l2 = new Array(100).fill(null).map((_, i) => ({ key: i + 1 }))
+    for (const e of list.range(1, 100)) {
+      expect(e).toEqual(l2[i++])
     }
   })
 })
