@@ -7,7 +7,7 @@ class Node<T, E extends Entry<T>> {
   bottom: Node<T, E> | null = null
   top: Node<T, E> | null = null
   prev: Node<T, E> | null = null
-  constructor(readonly ref: Ref<T, E> | null = null) {}
+  constructor(readonly ref: Ref<E> | null = null) {}
 
   getKey() {
     return this.ref?.entry.key
@@ -23,17 +23,25 @@ class Node<T, E extends Entry<T>> {
     return prev
   }
 
-  isEnd() {
+  isHead(): this is { ref: null; next: Node<T, E>; prev: null } {
     return !this.ref
   }
 
-  isBottom() {
-    return !this.bottom
+  isTail(): this is { ref: null; next: null; prev: Node<T, E> } {
+    return !this.ref
+  }
+
+  hasBottom(): this is { bottom: Node<T, E> } {
+    return !!this.bottom
+  }
+
+  hasValue(): this is { ref: Ref<E>; next: Node<T, E>; prev: Node<T, E> } {
+    return !!this.ref
   }
 }
 
-class Ref<T, E extends Entry<T>> {
-  constructor(public entry: E) {}
+class Ref<T> {
+  constructor(public entry: T) {}
 }
 
 export class SkipList<T, E extends Entry<T> = Entry<T>> {
@@ -62,7 +70,7 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
         return node.getEntry()
       }
 
-      if (node.next!.isEnd()) {
+      if (node.next!.isTail()) {
         node = node.bottom
         continue
       }
@@ -82,21 +90,36 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
 
   insert(entry: E): E | undefined {
     let node: Node<T, E> = this.head
-    while (!node.isBottom() || !node.next?.isEnd()) {
+    while (node.hasBottom()) {
       if (node.getKey() === entry.key) {
         return node.setEntry(entry)
       }
 
-      if (!node.next!.isEnd() && node.next!.getKey()! <= entry.key) {
-        node = node.next!
+      if (node.next?.hasValue() && node.next.getKey()! <= entry.key) {
+        node = node.next
         continue
       }
-      if (node.isBottom()) {
+
+      node = node.bottom
+    }
+
+    while (node.next?.hasValue()) {
+      if (node.getKey() === entry.key) {
+        return node.setEntry(entry)
+      }
+
+      if (node.next.getKey()! <= entry.key) {
+        node = node.next
+        continue
+      }
+
+      if (!node.hasBottom()) {
         break
       }
 
-      node = node.bottom!
+      node = node.bottom
     }
+
     if (node.getKey() === entry.key) {
       return node.setEntry(entry)
     }
@@ -119,11 +142,11 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
       }
 
       bottom = newNode
-      while (!prev.top && !prev.isEnd()) {
-        prev = prev.prev!
+      while (!prev.top && prev.hasValue()) {
+        prev = prev.prev
       }
-      while (!next.top && !next.isEnd()) {
-        next = next.next!
+      while (!next.top && next.hasValue()) {
+        next = next.next
       }
 
       if (prev.top && next.top) {
@@ -152,12 +175,12 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
 
   *entries(): IterableIterator<E> {
     let node = this.head
-    while (node.bottom) {
-      node = node.bottom!
+    while (node.hasBottom()) {
+      node = node.bottom
     }
 
     node = node.next!
-    while (!node.isEnd()) {
+    while (node.hasValue()) {
       yield node.getEntry()!
       node = node.next!
     }
@@ -171,22 +194,22 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
         deleted ??= node.getEntry()
         node.prev!.next = node.next
         node.next!.prev = node.prev
-        if (node.next!.isEnd() && node.prev!.isEnd()) {
+        if (node.next!.isHead() && node.prev!.isTail()) {
           this.height -= 1
-          node.prev!.top!.bottom = node.prev!.bottom
-          node.next!.top!.bottom = node.next!.bottom
-          if (node.prev!.bottom) {
-            node.prev!.bottom!.top = node.prev!.top
+          node.prev.top!.bottom = node.prev.bottom
+          node.next.top!.bottom = node.next.bottom
+          if (node.prev.hasBottom()) {
+            node.prev.bottom.top = node.prev.top
           }
-          if (node.next!.bottom) {
-            node.next!.bottom!.top = node.next!.top
+          if (node.next.hasBottom()) {
+            node.next.bottom.top = node.next.top
           }
         }
         node = node.bottom
         continue
       }
 
-      if (node.next!.isEnd()) {
+      if (node.next!.isTail()) {
         node = node.bottom
         continue
       }
