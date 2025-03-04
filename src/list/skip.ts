@@ -7,41 +7,37 @@ class Node<T, E extends Entry<T>> {
   bottom: Node<T, E> | null = null
   top: Node<T, E> | null = null
   prev: Node<T, E> | null = null
-  constructor(readonly ref: Ref<E> | null = null) {}
+  constructor(public entry: E | null = null) {}
 
   getKey() {
-    return this.ref?.entry.key
+    return this.entry?.key
   }
 
   getEntry() {
-    return this.ref?.entry
+    return this.entry ?? undefined
   }
 
   setEntry(entry: E) {
-    const prev = this.ref!.entry
-    this.ref!.entry = entry
-    return prev
+    const prev = this.entry
+    this.entry = entry
+    return prev ?? undefined
   }
 
-  isHead(): this is { ref: null; next: Node<T, E>; prev: null } {
-    return !this.ref
+  isHead(): this is { entry: null; next: Node<T, E>; prev: null } {
+    return !this.entry
   }
 
-  isTail(): this is { ref: null; next: null; prev: Node<T, E> } {
-    return !this.ref
+  isTail(): this is { entry: null; next: null; prev: Node<T, E> } {
+    return !this.entry
   }
 
   hasBottom(): this is { bottom: Node<T, E> } {
     return !!this.bottom
   }
 
-  hasValue(): this is { ref: Ref<E>; next: Node<T, E>; prev: Node<T, E> } {
-    return !!this.ref
+  hasValue(): this is { entry: E; next: Node<T, E>; prev: Node<T, E> } {
+    return !!this.entry
   }
-}
-
-class Ref<T> {
-  constructor(public entry: T) {}
 }
 
 export class SkipList<T, E extends Entry<T> = Entry<T>> {
@@ -115,9 +111,9 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     let prev: Node<T, E> = node
     let next: Node<T, E> = node.next!
     let bottom: Node<T, E> | null = null
-    const ref = new Ref(entry)
+
     for (let i = 1; i <= height; i += 1) {
-      const newNode = new Node<T, E>(ref)
+      const newNode = new Node<T, E>(entry)
       newNode.prev = prev
       prev.next = newNode
       newNode.next = next
