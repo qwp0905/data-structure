@@ -23,22 +23,8 @@ export class DoubleLinkedList<T> implements Iterable<T> {
   }
 
   moveBack(node: DoubleLinkedNode<T>) {
-    if (node === this.tail) {
-      return
-    }
-
-    if (node === this.head) {
-      this.head = this.head.next
-      this.head!.prev = null
-    } else {
-      node.prev!.next = node.next
-      node.next!.prev = node.prev
-    }
-
-    this.tail!.next = node
-    node.prev = this.tail
-    node.next = null
-    this.tail = node
+    this.remove(node)
+    this.pushBack(node)
   }
 
   pushBack(node: DoubleLinkedNode<T>): void {
@@ -84,22 +70,8 @@ export class DoubleLinkedList<T> implements Iterable<T> {
   }
 
   moveFront(node: DoubleLinkedNode<T>) {
-    if (node === this.head) {
-      return
-    }
-
-    if (node === this.tail) {
-      this.tail = this.tail.prev
-      this.tail!.next = null
-    } else {
-      node.prev!.next = node.next
-      node.next!.prev = node.prev
-    }
-
-    this.head!.prev = node
-    node.next = this.head
-    node.prev = null
-    this.head = node
+    this.remove(node)
+    this.pushFront(node)
   }
 
   popFront(): DoubleLinkedNode<T> | undefined {
@@ -122,7 +94,10 @@ export class DoubleLinkedList<T> implements Iterable<T> {
     return this.head ?? undefined
   }
 
-  delete(node: DoubleLinkedNode<T>) {
+  remove(node: DoubleLinkedNode<T>) {
+    if (this.len === 0) {
+      return
+    }
     if (node === this.head) {
       this.popFront()
       return

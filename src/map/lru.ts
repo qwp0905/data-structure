@@ -1,120 +1,126 @@
 import { DoubleLinkedList, DoubleLinkedNode } from "../list/linked"
 
-class CacheEntry<K, V> {
+class CacheEntry<K, V> extends DoubleLinkedNode<V> {
   constructor(
     public key: K,
-    public value: V
-  ) {}
+    value: V
+  ) {
+    super(value)
+  }
+
+  size() {
+    return sizeof(this.key) + sizeof(this.value)
+  }
 }
 
 export class LRUCache<K, V> {
-  private readonly cache = new Map<K, DoubleLinkedNode<CacheEntry<K, V>>>()
-  private readonly order = new DoubleLinkedList<CacheEntry<K, V>>()
+  private readonly map = new Map<K, CacheEntry<K, V>>()
+  private readonly list = new DoubleLinkedList<V>()
   private allocated = 0
 
   constructor(private readonly capacity: number) {}
 
   get(key: K): V | undefined {
-    const node = this.cache.get(key)
-    if (!node) {
+    const entry = this.map.get(key)
+    if (!entry) {
       return
     }
 
-    this.order.moveBack(node)
-    return node.value.value
+    this.list.moveBack(entry)
+    return entry.value
   }
 
-  set(key: K, value: V): void {
-    const exists = this.cache.get(key)
+  insert(key: K, value: V): void {
+    const exists = this.map.get(key)
     if (exists) {
-      this.allocated -= sizeof(exists)
-      exists.value.value = value
-      this.allocated += sizeof(exists)
-      this.order.moveBack(exists)
-      return
+      this.allocated -= exists.size()
+      this.list.remove(exists)
     }
 
     const entry = new CacheEntry(key, value)
-    const node = new DoubleLinkedNode(entry)
-    this.allocated += sizeof(node)
+    this.allocated += entry.size()
 
-    while (this.allocated > this.capacity && this.order.length > 0) {
-      const removed = this.order.popFront()
-      this.cache.delete(removed!.value.key)
-      this.allocated -= sizeof(removed!)
+    while (this.allocated > this.capacity && this.list.length > 0) {
+      const removed = this.list.popFront()! as CacheEntry<K, V>
+      this.map.delete(removed.key)
+      this.allocated -= removed.size()
     }
-    this.cache.set(key, node)
-    this.order.pushBack(node)
+    this.map.set(key, entry)
+    this.list.pushBack(entry)
+  }
+
+  peek(key: K): V | undefined {
+    return this.map.get(key)?.value
   }
 
   delete(key: K): void {
-    const node = this.cache.get(key)
-    if (!node) {
+    const entry = this.map.get(key)
+    if (!entry) {
       return
     }
 
-    this.allocated -= sizeof(node)
-    this.cache.delete(key)
-    this.order.delete(node)
+    this.allocated -= entry.size()
+    this.map.delete(key)
+    this.list.remove(entry)
   }
 }
 
-function sizeof<K, V>(node: DoubleLinkedNode<CacheEntry<K, V>>) {
-  const calculate = getCalculator(new WeakSet())
-  return (
-    calculate(node.value) +
-    ((node.next && 8) || 0) +
-    ((node.prev && 8) || 0) +
-    calculate(node.value.key) +
-    8
-  )
-}
-
-function sizeOfObject(seen: WeakSet<object>, object: any) {
-  if (object == null) {
-    return 0
-  }
-
+function sizeof(object: any): number {
+  const stack = [object]
+  const visited = new WeakSet<object>()
   let bytes = 0
-  for (const key of Reflect.ownKeys(object)) {
-    if (typeof object[key] === "object" && object[key] !== null) {
-      if (seen.has(object[key])) {
-        continue
-      }
-      seen.add(object[key])
+
+  while (stack.length > 0) {
+    const obj = stack.pop()
+    if (obj === null) {
+      continue
     }
 
-    bytes += getCalculator(seen)(key)
-    bytes += getCalculator(seen)(object[key])
-  }
-
-  return bytes
-}
-
-function getCalculator(seen: WeakSet<object>) {
-  return function calc(object: any): number {
-    if (Buffer.isBuffer(object)) {
-      return object.length
-    }
-
-    if (Array.isArray(object)) {
-      return object.map(calc).reduce((a, c) => a + c, 0)
-    }
-
-    switch (typeof object) {
-      case "string":
-        return 12 + 4 * Math.ceil(object.length / 4)
+    switch (typeof obj) {
       case "boolean":
-        return 4
+        bytes += 4
+        break
       case "number":
-        return 8
-      case "symbol": {
-        return (Symbol.keyFor(object)?.length ?? object.toString().length - 8) * 2
-      }
+        bytes += 8
+        break
+      case "string":
+        bytes += 12 + 4 * Math.ceil(obj.length / 4)
+        break
+      case "bigint":
+        bytes += Buffer.from(obj.toString()).byteLength
+        break
+      case "symbol":
+        bytes += (Symbol.keyFor(obj)?.length ?? obj.toString().length - 8) * 2
+        break
       case "object":
-        return sizeOfObject(seen, object)
+        if (visited.has(obj)) {
+          bytes += 8
+          break
+        }
+        visited.add(obj)
+        if (obj instanceof Map) {
+          stack.push(Object.fromEntries(obj))
+          break
+        }
+        if (obj instanceof Set) {
+          stack.push(Array.from(obj))
+          break
+        }
+        if (ArrayBuffer.isView(obj)) {
+          bytes += obj.byteLength
+          break
+        }
+        if (Array.isArray(obj)) {
+          stack.push(...obj)
+          break
+        }
+        for (const key in obj) {
+          stack.push(key, obj[key])
+        }
+        break
       default:
-        return 0
+        break
     }
   }
+  return bytes
 }
