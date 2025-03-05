@@ -168,6 +168,18 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     }
   }
 
+  *reverse(): IterableIterator<E> {
+    let node = this.tail
+    while (node.hasBottom()) {
+      node = node.bottom
+    }
+    node = node.prev!
+    while (node.hasValue()) {
+      yield node.getEntry()!
+      node = node.prev!
+    }
+  }
+
   *range(s: T, e: T): IterableIterator<E> {
     let node: Node<T, E> = this.head
     while (node.hasBottom()) {
