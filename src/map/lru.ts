@@ -114,7 +114,7 @@ function sizeof(object: any): number {
           stack.push(...obj)
           break
         }
-        for (const key in obj) {
+        for (const key of Reflect.ownKeys(obj)) {
           stack.push(key, obj[key])
         }
         break
