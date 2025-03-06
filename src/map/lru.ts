@@ -88,6 +88,10 @@ export class LRUCache<K, V> {
     return (this.oldMap.get(key) ?? this.newMap.get(key))?.value
   }
 
+  has(key: K): boolean {
+    return this.oldMap.has(key) || this.newMap.has(key)
+  }
+
   remove(key: K): void {
     const newOne = this.newMap.get(key)
     if (newOne) {
