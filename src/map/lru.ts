@@ -14,54 +14,90 @@ class CacheEntry<K, V> extends DoubleLinkedNode<V> {
 }
 
 export class LRUCache<K, V> {
-  private readonly map = new Map<K, CacheEntry<K, V>>()
-  private readonly list = new DoubleLinkedList<V>()
+  private readonly oldSub = new DoubleLinkedList<V>()
+  private readonly oldMap = new Map<K, CacheEntry<K, V>>()
+  private readonly newSub = new DoubleLinkedList<V>()
+  private readonly newMap = new Map<K, CacheEntry<K, V>>()
   private allocated = 0
 
   constructor(private readonly capacity: number) {}
 
   get(key: K): V | undefined {
-    const entry = this.map.get(key)
-    if (!entry) {
+    const newOne = this.newMap.get(key)
+    if (newOne) {
+      this.newSub.moveBack(newOne)
+      return newOne.value
+    }
+
+    const oldOne = this.oldMap.get(key)
+    if (!oldOne) {
       return
     }
 
-    this.list.moveBack(entry)
-    return entry.value
+    this.oldSub.remove(oldOne)
+    this.newSub.pushBack(oldOne)
+    this.oldMap.delete(key)
+    this.newMap.set(key, oldOne)
+    this.rebalance()
+    return oldOne.value
   }
 
   insert(key: K, value: V): void {
-    const exists = this.map.get(key)
-    if (exists) {
-      this.allocated -= exists.size()
-      this.list.remove(exists)
+    const newOne = this.newMap.get(key)
+    if (newOne) {
+      this.allocated -= newOne.size()
+      this.newSub.remove(newOne)
+    }
+
+    const oldOne = this.oldMap.get(key)
+    if (oldOne) {
+      this.allocated -= oldOne.size()
+      this.oldSub.remove(oldOne)
     }
 
     const entry = new CacheEntry(key, value)
     this.allocated += entry.size()
-
-    while (this.allocated > this.capacity && this.list.length > 0) {
-      const removed = this.list.popFront()! as CacheEntry<K, V>
-      this.map.delete(removed.key)
+    while (this.allocated > this.capacity && this.oldSub.length > 0) {
+      const removed = this.oldSub.popFront()! as CacheEntry<K, V>
+      this.oldMap.delete(removed.key)
       this.allocated -= removed.size()
+      this.rebalance()
     }
-    this.map.set(key, entry)
-    this.list.pushBack(entry)
+    this.oldMap.set(key, entry)
+    this.oldSub.pushBack(entry)
+  }
+
+  private rebalance() {
+    while (this.newSub.length > this.oldSub.length * 4) {
+      const removed = this.newSub.popFront()! as CacheEntry<K, V>
+      this.newMap.delete(removed.key)
+      this.allocated -= removed.size()
+      this.oldSub.pushBack(removed)
+    }
   }
 
   peek(key: K): V | undefined {
-    return this.map.get(key)?.value
+    return (this.oldMap.get(key) ?? this.newMap.get(key))?.value
   }
 
-  delete(key: K): void {
-    const entry = this.map.get(key)
-    if (!entry) {
+  remove(key: K): void {
+    const newOne = this.newMap.get(key)
+    if (newOne) {
+      this.allocated -= newOne.size()
+      this.newSub.remove(newOne)
+      this.newMap.delete(key)
       return
     }
 
-    this.allocated -= entry.size()
-    this.map.delete(key)
-    this.list.remove(entry)
+    const oldOne = this.oldMap.get(key)
+    if (!oldOne) {
+      return
+    }
+
+    this.allocated -= oldOne.size()
+    this.oldSub.remove(oldOne)
+    this.oldMap.delete(key)
+    this.rebalance()
   }
 }
 
