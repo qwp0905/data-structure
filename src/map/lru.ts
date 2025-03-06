@@ -22,6 +22,14 @@ export class LRUCache<K, V> {
 
   constructor(private readonly capacity: number) {}
 
+  clear() {
+    this.oldMap.clear()
+    this.newMap.clear()
+    this.oldSub.clear()
+    this.newSub.clear()
+    this.allocated = 0
+  }
+
   get(key: K): V | undefined {
     const newOne = this.newMap.get(key)
     if (newOne) {
@@ -98,6 +106,33 @@ export class LRUCache<K, V> {
     this.oldSub.remove(oldOne)
     this.oldMap.delete(key)
     this.rebalance()
+  }
+
+  *keys(): IterableIterator<K> {
+    yield* this.oldMap.keys()
+    yield* this.newMap.keys()
+  }
+
+  *values(): IterableIterator<V> {
+    yield* this.oldSub
+    yield* this.newSub
+  }
+
+  *entries(): IterableIterator<[K, V]> {
+    for (const [key, entry] of this.oldMap) {
+      yield [key, entry.value]
+    }
+    for (const [key, entry] of this.newMap) {
+      yield [key, entry.value]
+    }
+  }
+
+  forEach(callback: (value: V, key: K, map: typeof this) => void): void
+  forEach<T>(callback: (this: T, value: V, key: K, map: typeof this) => void, thisArg: T): void
+  forEach(callback: (value: V, key: K, map: typeof this) => void, thisArg?: any) {
+    for (const [key, value] of this.entries()) {
+      callback.call(thisArg, value, key, this)
+    }
   }
 }
 

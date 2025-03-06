@@ -129,4 +129,10 @@ export class DoubleLinkedList<T> implements Iterable<T> {
   }
 
   readonly [Symbol.iterator] = this.values
+
+  clear() {
+    this.head = null
+    this.tail = null
+    this.len = 0
+  }
 }
