@@ -118,8 +118,6 @@ function sizeof(object: any): number {
           stack.push(key, obj[key])
         }
         break
-      default:
-        break
     }
   }
   return bytes
