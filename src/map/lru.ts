@@ -22,7 +22,7 @@ export class LRUCache<K, V> {
 
   constructor(private readonly capacity: number) {}
 
-  clear() {
+  clear(): void {
     this.oldMap.clear()
     this.newMap.clear()
     this.oldSub.clear()
