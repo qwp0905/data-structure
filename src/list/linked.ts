@@ -1,12 +1,12 @@
-export class DoubleLinkedNode<T> {
-  prev: DoubleLinkedNode<T> | null = null
-  next: DoubleLinkedNode<T> | null = null
+export class LinkedNode<T> {
+  prev: LinkedNode<T> | null = null
+  next: LinkedNode<T> | null = null
   constructor(readonly value: T) {}
 }
 
-export class DoubleLinkedList<T> implements Iterable<T> {
-  private head: DoubleLinkedNode<T> | null = null
-  private tail: DoubleLinkedNode<T> | null = null
+export class LinkedList<T> implements Iterable<T> {
+  private head: LinkedNode<T> | null = null
+  private tail: LinkedNode<T> | null = null
   private len = 0
 
   constructor(iterable?: Iterable<T>) {
@@ -14,7 +14,7 @@ export class DoubleLinkedList<T> implements Iterable<T> {
       return
     }
     for (const v of iterable) {
-      this.pushBack(new DoubleLinkedNode(v))
+      this.pushBack(new LinkedNode(v))
     }
   }
 
@@ -22,12 +22,12 @@ export class DoubleLinkedList<T> implements Iterable<T> {
     return this.len
   }
 
-  moveBack(node: DoubleLinkedNode<T>) {
+  moveBack(node: LinkedNode<T>) {
     this.remove(node)
     this.pushBack(node)
   }
 
-  pushBack(node: DoubleLinkedNode<T>): void {
+  pushBack(node: LinkedNode<T>): void {
     if (this.len === 0) {
       this.head = node
     } else {
@@ -38,7 +38,7 @@ export class DoubleLinkedList<T> implements Iterable<T> {
     this.len++
   }
 
-  popBack(): DoubleLinkedNode<T> | undefined {
+  popBack(): LinkedNode<T> | undefined {
     if (!this.tail) {
       return
     }
@@ -58,7 +58,7 @@ export class DoubleLinkedList<T> implements Iterable<T> {
     return this.tail?.value
   }
 
-  pushFront(node: DoubleLinkedNode<T>): void {
+  pushFront(node: LinkedNode<T>): void {
     if (this.len === 0) {
       this.tail = node
     } else {
@@ -69,12 +69,12 @@ export class DoubleLinkedList<T> implements Iterable<T> {
     this.len++
   }
 
-  moveFront(node: DoubleLinkedNode<T>) {
+  moveFront(node: LinkedNode<T>) {
     this.remove(node)
     this.pushFront(node)
   }
 
-  popFront(): DoubleLinkedNode<T> | undefined {
+  popFront(): LinkedNode<T> | undefined {
     if (!this.head) {
       return
     }
@@ -90,11 +90,11 @@ export class DoubleLinkedList<T> implements Iterable<T> {
     return value
   }
 
-  peekFront(): DoubleLinkedNode<T> | undefined {
+  peekFront(): LinkedNode<T> | undefined {
     return this.head ?? undefined
   }
 
-  remove(node: DoubleLinkedNode<T>) {
+  remove(node: LinkedNode<T>) {
     if (this.len === 0) {
       return
     }

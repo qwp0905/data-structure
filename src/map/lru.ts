@@ -1,6 +1,6 @@
-import { DoubleLinkedList, DoubleLinkedNode } from "../list/linked"
+import { LinkedList, LinkedNode } from "../list/linked"
 
-class CacheEntry<K, V> extends DoubleLinkedNode<K> {
+class CacheEntry<K, V> extends LinkedNode<K> {
   constructor(
     key: K,
     public stored: V
@@ -14,9 +14,9 @@ class CacheEntry<K, V> extends DoubleLinkedNode<K> {
 }
 
 export class LRUCache<K, V> {
-  private readonly oldSubList = new DoubleLinkedList<K>()
+  private readonly oldSubList = new LinkedList<K>()
   private readonly oldMap = new Map<K, CacheEntry<K, V>>()
-  private readonly newSubList = new DoubleLinkedList<K>()
+  private readonly newSubList = new LinkedList<K>()
   private readonly newMap = new Map<K, CacheEntry<K, V>>()
   private allocated = 0
 
