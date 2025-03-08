@@ -1,10 +1,11 @@
 import { DoubleLinkedList, DoubleLinkedNode } from "../list/linked"
 
 class CacheEntry<K, V> extends DoubleLinkedNode<K> {
-  public stored: V
-  constructor(key: K, value: V) {
+  constructor(
+    key: K,
+    public stored: V
+  ) {
     super(key)
-    this.stored = value
   }
 
   size() {
