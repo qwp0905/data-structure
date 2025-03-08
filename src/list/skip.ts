@@ -38,12 +38,16 @@ class Node<T, E extends Entry<T>> {
   hasValue(): this is { entry: E; next: Node<T, E>; prev: Node<T, E> } {
     return !!this.entry
   }
+
+  hasTop(): this is { top: Node<T, E> } {
+    return !!this.top
+  }
 }
 
 export class SkipList<T, E extends Entry<T> = Entry<T>> {
   private head = new Node<T, E>()
   private tail = new Node<T, E>()
-  private height = 1
+  private _height = 1
   private len = 0
   constructor(private readonly maxHeight: number = Infinity) {
     this.head.next = this.tail
@@ -51,7 +55,7 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
   }
 
   private randomHeight() {
-    const max = Math.min(this.maxHeight, this.height)
+    const max = Math.min(this.maxHeight, this._height)
     let height = 1
     while (height < max && Math.random() < 0.5) {
       height += 1
@@ -84,6 +88,10 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     return this.len
   }
 
+  get height(): number {
+    return this._height
+  }
+
   insert(entry: E): E | undefined {
     let node: Node<T, E> = this.head
     while (node.hasBottom()) {
@@ -112,7 +120,7 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     let next: Node<T, E> = node.next!
     let bottom: Node<T, E> | null = null
 
-    for (let i = 1; i <= height; i += 1) {
+    for (let i = 0; i < height; i += 1) {
       const newNode = new Node<T, E>(entry)
       newNode.prev = prev
       prev.next = newNode
@@ -124,14 +132,14 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
       }
 
       bottom = newNode
-      while (!prev.top && prev.hasValue()) {
+      while (!prev.hasTop() && prev.hasValue()) {
         prev = prev.prev
       }
-      while (!next.top && next.hasValue()) {
+      while (!next.hasTop() && next.hasValue()) {
         next = next.next
       }
 
-      if (prev.top && next.top) {
+      if (prev.hasTop() && next.hasTop()) {
         prev = prev.top
         next = next.top
         continue
@@ -151,7 +159,7 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
       next.top = newTail
       prev = newHead
       next = newTail
-      this.height += 1
+      this._height += 1
     }
   }
 
@@ -215,7 +223,7 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
         node.prev!.next = node.next
         node.next!.prev = node.prev
         if (node.next!.isHead() && node.prev!.isTail()) {
-          this.height -= 1
+          this._height -= 1
           node.prev.top!.bottom = node.prev.bottom
           node.next.top!.bottom = node.next.bottom
           if (node.prev.hasBottom()) {

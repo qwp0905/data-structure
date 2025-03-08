@@ -271,4 +271,12 @@ describe("SkipList", () => {
       expect(e).toEqual(l[i++])
     }
   })
+
+  it("should height be less then count", () => {
+    for (let i = 1; i <= 100; i++) {
+      expect(list.insert({ key: i })).toBeUndefined()
+    }
+
+    expect(list.height).toBeLessThanOrEqual(list.length)
+  })
 })
