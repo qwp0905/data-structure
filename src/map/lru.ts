@@ -1,9 +1,9 @@
 import { LinkedList, LinkedNode } from "../list/linked"
 
-class CacheEntry<K, V> extends LinkedNode<K> {
+class CacheEntry<K> extends LinkedNode<K> {
   constructor(
     key: K,
-    public stored: V
+    public stored: any
   ) {
     super(key)
   }
@@ -13,11 +13,11 @@ class CacheEntry<K, V> extends LinkedNode<K> {
   }
 }
 
-export class LRUCache<K, V> {
+export class LRUCache<K = string> {
   private readonly oldSubList = new LinkedList<K>()
-  private readonly oldMap = new Map<K, CacheEntry<K, V>>()
+  private readonly oldMap = new Map<K, CacheEntry<K>>()
   private readonly newSubList = new LinkedList<K>()
-  private readonly newMap = new Map<K, CacheEntry<K, V>>()
+  private readonly newMap = new Map<K, CacheEntry<K>>()
   private allocated = 0
 
   constructor(private readonly capacity: number) {}
@@ -38,7 +38,7 @@ export class LRUCache<K, V> {
     this.allocated = 0
   }
 
-  get(key: K): V | undefined {
+  get<T>(key: K): T | undefined {
     const newOne = this.newMap.get(key)
     if (newOne) {
       this.newSubList.moveFront(newOne)
@@ -58,7 +58,7 @@ export class LRUCache<K, V> {
     return oldOne.stored
   }
 
-  insert(key: K, value: V): void {
+  insert(key: K, value: any): void {
     const newOne = this.newMap.get(key)
     if (newOne) {
       this.allocated -= newOne.size()
@@ -90,7 +90,7 @@ export class LRUCache<K, V> {
 
   private evict() {
     while (this.allocated > this.capacity && this.oldSubList.length > 0) {
-      const removed = this.oldSubList.popBack()! as CacheEntry<K, V>
+      const removed = this.oldSubList.popBack()! as CacheEntry<K>
       this.oldMap.delete(removed.value)
       this.allocated -= removed.size()
       this.rebalance()
@@ -99,14 +99,14 @@ export class LRUCache<K, V> {
 
   private rebalance() {
     while (this.newSubList.length * 3 > this.oldSubList.length * 5) {
-      const removed = this.newSubList.popBack()! as CacheEntry<K, V>
+      const removed = this.newSubList.popBack()! as CacheEntry<K>
       this.newMap.delete(removed.value)
       this.allocated -= removed.size()
       this.oldSubList.pushFront(removed)
     }
   }
 
-  peek(key: K): V | undefined {
+  peek<T>(key: K): T | undefined {
     return (this.oldMap.get(key) ?? this.newMap.get(key))?.stored
   }
 
@@ -139,7 +139,7 @@ export class LRUCache<K, V> {
     yield* this.newMap.keys()
   }
 
-  *values(): IterableIterator<V> {
+  *values<T>(): IterableIterator<T> {
     for (const entry of this.oldMap.values()) {
       yield entry.stored
     }
@@ -148,7 +148,7 @@ export class LRUCache<K, V> {
     }
   }
 
-  *entries(): IterableIterator<[K, V]> {
+  *entries(): IterableIterator<[K, any]> {
     for (const [key, entry] of this.oldMap.entries()) {
       yield [key, entry.stored]
     }
@@ -159,9 +159,9 @@ export class LRUCache<K, V> {
 
   [Symbol.iterator] = this.entries
 
-  forEach(callback: (value: V, key: K, map: typeof this) => void): void
-  forEach<T>(callback: (this: T, value: V, key: K, map: typeof this) => void, thisArg: T): void
-  forEach(callback: (value: V, key: K, map: typeof this) => void, thisArg?: any) {
+  forEach(callback: (value: any, key: K, map: typeof this) => void): void
+  forEach<T>(callback: (this: T, value: any, key: K, map: typeof this) => void, thisArg: T): void
+  forEach(callback: (value: any, key: K, map: typeof this) => void, thisArg?: any) {
     for (const [key, value] of this.entries()) {
       callback.call(thisArg, value, key, this)
     }
