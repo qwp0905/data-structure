@@ -151,49 +151,55 @@ function sizeof(object: any): number {
       continue
     }
 
-    switch (typeof obj) {
-      case "boolean":
-        bytes += 4
-        break
-      case "number":
-        bytes += 8
-        break
-      case "string":
-        bytes += 12 + 4 * Math.ceil(obj.length / 4)
-        break
-      case "bigint":
-        bytes += Buffer.from(obj.toString()).byteLength
-        break
-      case "symbol":
-        bytes += (Symbol.keyFor(obj)?.length ?? obj.toString().length - 8) * 2
-        break
-      case "object":
-        if (visited.has(obj)) {
-          bytes += 8
-          break
-        }
-        visited.add(obj)
-        if (obj instanceof Map) {
-          stack.push(Object.fromEntries(obj))
-          break
-        }
-        if (obj instanceof Set) {
-          stack.push(Array.from(obj))
-          break
-        }
-        if (ArrayBuffer.isView(obj)) {
-          bytes += obj.byteLength
-          break
-        }
-        if (Array.isArray(obj)) {
-          stack.push(...obj)
-          break
-        }
-        for (const key of Reflect.ownKeys(obj)) {
-          stack.push(key, obj[key])
-        }
-        break
+    const type = typeof obj
+    if (type === "boolean") {
+      bytes += 4
+      continue
+    }
+    if (type === "number") {
+      bytes += 8
+      continue
+    }
+    if (type === "string") {
+      bytes += 12 + 4 * Math.ceil(obj.length / 4)
+      continue
+    }
+    if (type === "bigint") {
+      bytes += Buffer.from(obj.toString()).byteLength
+      continue
+    }
+    if (type === "symbol") {
+      bytes += (Symbol.keyFor(obj)?.length ?? obj.toString().length - 8) * 2
+      continue
+    }
+    if (type !== "object") {
+      continue
+    }
+    if (visited.has(obj)) {
+      bytes += 8 // pointer size
+      continue
+    }
+    visited.add(obj)
+    if (obj instanceof Map) {
+      stack.push(Object.fromEntries(obj))
+      continue
+    }
+    if (obj instanceof Set) {
+      stack.push(Array.from(obj))
+      continue
+    }
+    if (ArrayBuffer.isView(obj)) {
+      bytes += obj.byteLength
+      continue
+    }
+    if (Array.isArray(obj)) {
+      stack.push(...obj)
+      continue
+    }
+    for (const key of Reflect.ownKeys(obj)) {
+      stack.push(key, obj[key])
     }
   }
+
   return bytes
 }
