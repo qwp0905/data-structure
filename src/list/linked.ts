@@ -4,7 +4,7 @@ export class LinkedNode<T> {
   constructor(readonly value: T) {}
 }
 
-export class LinkedList<T> implements Iterable<T> {
+export class LinkedList<T> implements Iterable<LinkedNode<T>> {
   private head: LinkedNode<T> | null = null
   private tail: LinkedNode<T> | null = null
   private len = 0
@@ -54,8 +54,8 @@ export class LinkedList<T> implements Iterable<T> {
     return value
   }
 
-  peekBack(): T | undefined {
-    return this.tail?.value
+  peekBack(): LinkedNode<T> | undefined {
+    return this.tail ?? undefined
   }
 
   pushFront(node: LinkedNode<T>): void {
@@ -99,31 +99,31 @@ export class LinkedList<T> implements Iterable<T> {
       return
     }
     if (node === this.head) {
-      this.popFront()
-      return
+      return this.popFront()
     }
     if (node === this.tail) {
-      this.popBack()
-      return
+      return this.popBack()
     }
 
     node.prev!.next = node.next
     node.next!.prev = node.prev
     this.len--
+
+    return node
   }
 
-  *values(): IterableIterator<T> {
+  *values(): IterableIterator<LinkedNode<T>> {
     let current = this.head
     while (current !== null) {
-      yield current.value
+      yield current
       current = current.next
     }
   }
 
-  *reverse() {
+  *reverse(): IterableIterator<LinkedNode<T>> {
     let current = this.tail
     while (current !== null) {
-      yield current.value
+      yield current
       current = current.prev
     }
   }
