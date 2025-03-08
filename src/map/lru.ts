@@ -64,6 +64,7 @@ export class LRUCache<K = string> {
       this.allocated -= newOne.size()
       newOne.stored = value
       this.allocated += newOne.size()
+      this.evict()
       this.newSubList.moveFront(newOne)
       return
     }
