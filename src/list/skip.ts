@@ -2,12 +2,16 @@ interface Entry<T> {
   readonly key: T
 }
 
-class Node<T, E extends Entry<T>> {
-  next: Node<T, E> | null = null
-  bottom: Node<T, E> | null = null
-  top: Node<T, E> | null = null
-  prev: Node<T, E> | null = null
-  constructor(public entry: E | null = null) {}
+class SkipNode<T, E extends Entry<T>> {
+  private next: SkipNode<T, E> | null = null
+  private bottom: SkipNode<T, E> | null = null
+  constructor(private entry: E | null = null) {}
+
+  setNext(next: SkipNode<T, E> | null) {
+    const prev = this.next
+    this.next = next
+    return prev
+  }
 
   getKey() {
     return this.entry?.key
@@ -17,41 +21,41 @@ class Node<T, E extends Entry<T>> {
     return this.entry ?? undefined
   }
 
-  setEntry(entry: E) {
+  swapEntry(entry: E) {
     const prev = this.entry
     this.entry = entry
     return prev ?? undefined
   }
 
-  isHead(): this is { entry: null; next: Node<T, E>; prev: null } {
+  getNext() {
+    return this.next
+  }
+
+  isTail() {
+    return !this.next
+  }
+
+  isHead() {
     return !this.entry
   }
 
-  isTail(): this is { entry: null; next: null; prev: Node<T, E> } {
-    return !this.entry
+  getBottom() {
+    return this.bottom
   }
 
-  hasBottom(): this is { bottom: Node<T, E> } {
-    return !!this.bottom
-  }
-
-  hasValue(): this is { entry: E; next: Node<T, E>; prev: Node<T, E> } {
-    return !!this.entry
-  }
-
-  hasTop(): this is { top: Node<T, E> } {
-    return !!this.top
+  setBottom(bottom: SkipNode<T, E> | null) {
+    const prev = this.bottom
+    this.bottom = bottom
+    return prev
   }
 }
-
 export class SkipList<T, E extends Entry<T> = Entry<T>> {
-  private head = new Node<T, E>()
-  private tail = new Node<T, E>()
+  head = new SkipNode<T, E>()
+  tail = new SkipNode<T, E>()
   private _height = 1
   private len = 0
   constructor(private readonly maxHeight: number = Infinity) {
-    this.head.next = this.tail
-    this.tail.prev = this.head
+    this.head.setNext(this.tail)
   }
 
   private randomHeight() {
@@ -64,23 +68,23 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
   }
 
   get(k: T): E | undefined {
-    let node: Node<T, E> | null = this.head
+    let node: SkipNode<T, E> | null = this.head
     while (node) {
       if (node.getKey() === k) {
         return node.getEntry()
       }
 
-      if (node.next!.isTail()) {
-        node = node.bottom
+      if (node.getNext()?.isTail()) {
+        node = node.getBottom()
         continue
       }
 
-      if (node.next!.getKey()! > k) {
-        node = node.bottom
+      if (node.getNext()!.getKey()! > k) {
+        node = node.getBottom()
         continue
       }
 
-      node = node.next
+      node = node.getNext()
     }
   }
 
@@ -93,165 +97,138 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
   }
 
   insert(entry: E): E | undefined {
-    let node: Node<T, E> = this.head
-    while (node.hasBottom()) {
+    const buffered = []
+    let node: SkipNode<T, E> = this.head
+    while (!!node.getBottom()) {
       if (node.getKey() === entry.key) {
-        return node.setEntry(entry)
+        buffered.length = 0
+        return node.swapEntry(entry)
       }
-
-      if (node.next?.hasValue() && node.next.getKey()! <= entry.key) {
-        node = node.next
+      const next = node.getNext()!
+      if (!next.isTail() && next.getKey()! <= entry.key) {
+        node = next
         continue
       }
 
-      node = node.bottom
+      buffered.push(node)
+      node = node.getBottom()!
     }
-    while (node.next?.hasValue() && node.next.getKey()! <= entry.key) {
-      node = node.next
+
+    while (!node.getNext()!.isTail() && node.getNext()!.getKey()! <= entry.key) {
+      node = node.getNext()!
     }
 
     if (node.getKey() === entry.key) {
-      return node.setEntry(entry)
+      buffered.length = 0
+      return node.swapEntry(entry)
     }
 
+    buffered.push(node)
     this.len += 1
+
     const height = this.randomHeight()
-    let prev: Node<T, E> = node
-    let next: Node<T, E> = node.next!
-    let bottom: Node<T, E> | null = null
+    const delta = height - this._height + 1
 
-    for (let i = 0; i < height; i += 1) {
-      const newNode = new Node<T, E>(entry)
-      newNode.prev = prev
-      prev.next = newNode
-      newNode.next = next
-      next.prev = newNode
-      newNode.bottom = bottom
-      if (!!bottom) {
-        bottom.top = newNode
-      }
+    while (buffered.length > height) {
+      buffered.shift()
+    }
 
-      bottom = newNode
-      while (!prev.hasTop() && prev.hasValue()) {
-        prev = prev.prev
-      }
-      while (!next.hasTop() && next.hasValue()) {
-        next = next.next
-      }
-
-      if (prev.hasTop() && next.hasTop()) {
-        prev = prev.top
-        next = next.top
-        continue
-      }
-
-      const newHead = new Node<T, E>()
-      const newTail = new Node<T, E>()
-      newHead.next = newTail
-      newTail.prev = newHead
-      newHead.bottom = this.head
-      newTail.bottom = this.tail
-      this.head.top = newHead
-      this.tail.top = newTail
+    for (let i = 0; i < delta; i += 1) {
+      const newHead = new SkipNode<T, E>()
+      const newTail = new SkipNode<T, E>()
+      newHead.setNext(newTail)
+      newHead.setBottom(this.head)
+      newTail.setBottom(this.tail)
       this.head = newHead
       this.tail = newTail
-      prev.top = newHead
-      next.top = newTail
-      prev = newHead
-      next = newTail
       this._height += 1
-    }
-  }
-
-  *entries(): IterableIterator<E> {
-    let node = this.head
-    while (node.hasBottom()) {
-      node = node.bottom
-    }
-
-    node = node.next!
-    while (node.hasValue()) {
-      yield node.getEntry()!
-      node = node.next!
-    }
-  }
-
-  *reverse(): IterableIterator<E> {
-    let node = this.tail
-    while (node.hasBottom()) {
-      node = node.bottom
-    }
-    node = node.prev!
-    while (node.hasValue()) {
-      yield node.getEntry()!
-      node = node.prev!
-    }
-  }
-
-  *range(s: T, e: T): IterableIterator<E> {
-    let node: Node<T, E> = this.head
-    while (node.hasBottom()) {
-      if (node.getKey() === s) {
-        node = node.bottom
-        continue
+      if (buffered.length < height) {
+        buffered.unshift(newHead)
       }
-
-      if (node.next?.hasValue() && node.next.getKey()! <= s) {
-        node = node.next
-        continue
-      }
-
-      node = node.bottom
     }
 
-    while (node.getKey()! < s && node.next?.hasValue()) {
-      node = node.next
-    }
-
-    while (node.getKey()! < e && node.next?.hasValue()) {
-      yield node.getEntry()!
-      node = node.next
+    let bottom: SkipNode<T, E> | null = null
+    while (buffered.length) {
+      const prev = buffered.pop()!
+      const next = prev.getNext()!
+      const newNode = new SkipNode<T, E>(entry)
+      newNode.setNext(next)
+      prev.setNext(newNode)
+      newNode.setBottom(bottom)
+      bottom = newNode
     }
   }
 
   delete(k: T): E | undefined {
-    let node: Node<T, E> | null = this.head
-    let deleted: E | undefined
-    while (!!node) {
-      if (node.getKey() === k) {
-        deleted ??= node.getEntry()
-        node.prev!.next = node.next
-        node.next!.prev = node.prev
-        if (node.next!.isHead() && node.prev!.isTail()) {
-          this._height -= 1
-          node.prev.top!.bottom = node.prev.bottom
-          node.next.top!.bottom = node.next.bottom
-          if (node.prev.hasBottom()) {
-            node.prev.bottom.top = node.prev.top
-          }
-          if (node.next.hasBottom()) {
-            node.next.bottom.top = node.next.top
-          }
+    let node: SkipNode<T, E> = this.head
+    let removed: E | undefined = undefined
+    let bottom: SkipNode<T, E> | null = null
+    while ((bottom = node.getBottom())) {
+      let next = bottom.getNext()!
+      while (!next.isTail() && next.getKey()! < k) {
+        bottom = next
+        next = next.getNext()!
+      }
+
+      if (next.getKey() === k) {
+        removed ??= next.getEntry()
+        bottom.setNext(next.getNext())
+        if (!bottom.isHead() || !next.getNext()!.isTail()) {
+          node = bottom
+          continue
         }
-        node = node.bottom
+        node.setBottom(bottom.getBottom())
+        node.getNext()!.setBottom(next.getNext())
+        this._height -= 1
         continue
       }
 
-      if (node.next!.isTail()) {
-        node = node.bottom
-        continue
-      }
-
-      if (node.next!.getKey()! > k) {
-        node = node.bottom
-        continue
-      }
-
-      node = node.next
+      node = bottom
     }
-    if (deleted) {
+    if (removed) {
       this.len -= 1
     }
-    return deleted
+
+    return removed
+  }
+
+  *entries(): IterableIterator<E> {
+    let node = this.head
+    let bottom: SkipNode<T, E> | null = null
+    while ((bottom = node.getBottom())) {
+      node = bottom
+    }
+    let next: SkipNode<T, E>
+    while (!(next = node.getNext()!).isTail()) {
+      yield next.getEntry()!
+      node = next
+    }
+  }
+
+  *range(s: T, e: T): IterableIterator<E> {
+    let node = this.head
+    let bottom: SkipNode<T, E> | null
+    while ((bottom = node.getBottom())) {
+      if (node.getKey() === s) {
+        node = bottom
+        continue
+      }
+      const next = node.getNext()!
+      if (!next.isTail() && next.getKey()! <= s) {
+        node = next
+        continue
+      }
+
+      node = bottom
+    }
+
+    while (node.getKey()! < s && !node.getNext()?.isTail()) {
+      node = node.getNext()!
+    }
+
+    while (node.getKey()! < e && !node.getNext()?.isTail()) {
+      yield node.getEntry()!
+      node = node.getNext()!
+    }
   }
 }

@@ -113,6 +113,7 @@ describe("SkipList", () => {
     expect(list.delete(10)).toEqual({ key: 10 })
     expect(list.delete(11)).toBeUndefined()
     expect(list.length).toBe(0)
+    expect(list.height).toBe(1)
   })
 
   it("should insert and delete at many key", () => {
@@ -137,6 +138,8 @@ describe("SkipList", () => {
         expect(list.get(i)).toEqual({ key: i })
       }
     }
+    expect(list.length).toBe(100 - delete_list.length)
+    expect(list.height).toBeLessThanOrEqual(100 - delete_list.length)
   })
 
   it("should insert and delete at many key 2", () => {
@@ -161,6 +164,33 @@ describe("SkipList", () => {
         expect(list.get(i)).toEqual({ key: i })
       }
     }
+
+    expect(list.length).toBe(100 - delete_list.length)
+    expect(list.height).toBeLessThanOrEqual(100 - delete_list.length)
+  })
+
+  it("should insert and delete all keys", () => {
+    const keys = new Set(
+      Array(1000)
+        .fill(null)
+        .map(() => Math.floor(Math.random() * 10000))
+    )
+    for (const key of keys) {
+      expect(list.insert({ key })).toBeUndefined()
+    }
+    for (const key of keys) {
+      expect(list.get(key)).toEqual({ key })
+    }
+    expect(list.length).toBe(keys.size)
+    expect(list.height).toBeLessThanOrEqual(keys.size)
+    for (const key of keys) {
+      expect(list.delete(key)).toEqual({ key })
+    }
+    for (const key of keys) {
+      expect(list.get(key)).toBeUndefined()
+    }
+    expect(list.length).toBe(0)
+    expect(list.height).toBe(1)
   })
 
   it("should iterate", () => {
@@ -211,6 +241,9 @@ describe("SkipList", () => {
     for (const entry of list.entries()) {
       expect(entry).toEqual(l[i2++])
     }
+
+    expect(list.length).toBe(100 - delete_list.length)
+    expect(list.height).toBeLessThanOrEqual(100 - delete_list.length)
   })
 
   it("should range", () => {
@@ -255,21 +288,9 @@ describe("SkipList", () => {
     for (const e of list.range(1, 100)) {
       expect(e).toEqual(l2[i++])
     }
-  })
 
-  it("should reverse", () => {
-    for (let i = 1; i <= 100; i++) {
-      expect(list.insert({ key: i })).toBeUndefined()
-    }
-
-    const l = new Array(100)
-      .fill(null)
-      .map((_, i) => ({ key: i + 1 }))
-      .reverse()
-    let i = 0
-    for (const e of list.reverse()) {
-      expect(e).toEqual(l[i++])
-    }
+    expect(list.length).toBe(100 - delete_list.length)
+    expect(list.height).toBeLessThanOrEqual(100 - delete_list.length)
   })
 
   it("should height be less then count", () => {
