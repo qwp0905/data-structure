@@ -181,7 +181,7 @@ class Node<T, E extends Entry<T>> {
     if (s <= this.entry.key && e > this.entry.key) {
       yield this.entry
     }
-    if (e > this.entry.key && this.right) {
+    if (this.right && e > this.entry.key) {
       yield* this.right.range(s, e)
     }
   }
