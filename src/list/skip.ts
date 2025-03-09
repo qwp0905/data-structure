@@ -44,9 +44,7 @@ class SkipNode<T, E extends Entry<T>> {
   }
 
   setBottom(bottom: SkipNode<T, E> | null) {
-    const prev = this.bottom
     this.bottom = bottom
-    return prev
   }
 }
 export class SkipList<T, E extends Entry<T> = Entry<T>> {
