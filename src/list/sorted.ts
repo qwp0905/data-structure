@@ -1,5 +1,15 @@
 export abstract class SortedList<T> {
   private readonly list: T[] = []
+  constructor(iterator?: Iterable<T>) {
+    if (!iterator) {
+      return
+    }
+
+    for (const value of iterator) {
+      this.insert(value)
+    }
+  }
+
   protected abstract compare(a: T, b: T): number
 
   get(index: number) {
