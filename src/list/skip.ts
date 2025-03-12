@@ -127,13 +127,11 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     this.len += 1
 
     const height = this.randomHeight()
-    const delta = height - this._height + 1
-
     while (buffered.length > height) {
       buffered.popFront()
     }
 
-    for (let i = 0; i < delta; i += 1) {
+    if (height === this._height) {
       const newHead = new SkipNode<T, E>()
       const newTail = new SkipNode<T, E>()
       newHead.setNext(newTail)
@@ -142,9 +140,6 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
       this.head = newHead
       this.tail = newTail
       this._height += 1
-      if (buffered.length < height) {
-        buffered.pushFront(newHead)
-      }
     }
 
     let bottom: SkipNode<T, E> | null = null
@@ -169,26 +164,28 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
         bottom = next
         next = next.getNext()!
       }
-
-      if (next.getKey() === k) {
-        removed ??= next.getEntry()
-        bottom.setNext(next.getNext())
-        if (!bottom.isHead() || !next.getNext()!.isTail()) {
-          node = bottom
-          continue
-        }
-        node.setBottom(bottom.getBottom())
-        node.getNext()!.setBottom(next.getNext())
-        this._height -= 1
+      if (next.getKey() !== k) {
+        node = bottom
         continue
       }
 
-      node = bottom
-    }
-    if (removed) {
-      this.len -= 1
+      removed ??= next.getEntry()
+      bottom.setNext(next.getNext())
+      if (!bottom.isHead() || !next.getNext()!.isTail()) {
+        node = bottom
+        continue
+      }
+
+      node.setBottom(bottom.getBottom())
+      node.getNext()!.setBottom(next.getNext())
+      this._height -= 1
     }
 
+    if (!removed) {
+      return removed
+    }
+
+    this.len -= 1
     return removed
   }
 
