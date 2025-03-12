@@ -215,7 +215,7 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     return this.root?.get(k)
   }
 
-  delete(k: T): E | undefined {
+  remove(k: T): E | undefined {
     if (!this.root) {
       return
     }

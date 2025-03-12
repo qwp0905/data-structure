@@ -16,13 +16,13 @@ function test() {
     tree.insert(new DefaultEntry(1))
     tree.insert(new DefaultEntry(2))
     tree.insert(new DefaultEntry(3))
-    expect(tree.delete(2)?.key).toBe(2)
+    expect(tree.remove(2)?.key).toBe(2)
     expect(tree.get(2)?.key).toBeUndefined()
   })
 
   it("should return undefined if not found", () => {
     expect(tree.get(1)?.key).toBeUndefined()
-    expect(tree.delete(1)).toBeUndefined()
+    expect(tree.remove(1)).toBeUndefined()
   })
 
   it("should return true if has", () => {
@@ -56,8 +56,8 @@ function test() {
     tree.insert(new DefaultEntry(4))
     tree.insert(new DefaultEntry(5))
     tree.insert(new DefaultEntry(6))
-    tree.delete(3)
-    tree.delete(4)
+    tree.remove(3)
+    tree.remove(4)
     expect(tree.get(1)?.key).toBe(1)
     expect(tree.get(2)?.key).toBe(2)
     expect(tree.get(3)?.key).toBeUndefined()
@@ -73,7 +73,7 @@ function test() {
     }
 
     for (const e of tobeDelete) {
-      tree.delete(e)
+      tree.remove(e)
     }
 
     for (let i = 1; i < 100; i++) {

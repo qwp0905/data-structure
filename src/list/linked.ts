@@ -1,10 +1,10 @@
-export class LinkedNode<T> {
+class LinkedNode<T> {
   prev: LinkedNode<T> | null = null
   next: LinkedNode<T> | null = null
   constructor(readonly value: T) {}
 }
 
-export class LinkedList<T> implements Iterable<LinkedNode<T>> {
+export class LinkedList<T> implements Iterable<T> {
   private head: LinkedNode<T> | null = null
   private tail: LinkedNode<T> | null = null
   private len = 0
@@ -14,7 +14,7 @@ export class LinkedList<T> implements Iterable<LinkedNode<T>> {
       return
     }
     for (const v of iterable) {
-      this.pushBack(new LinkedNode(v))
+      this.pushBack(v)
     }
   }
 
@@ -22,12 +22,8 @@ export class LinkedList<T> implements Iterable<LinkedNode<T>> {
     return this.len
   }
 
-  moveBack(node: LinkedNode<T>) {
-    this.remove(node)
-    this.pushBack(node)
-  }
-
-  pushBack(node: LinkedNode<T>): void {
+  pushBack(value: T): void {
+    const node = new LinkedNode(value)
     if (this.len === 0) {
       this.head = node
     } else {
@@ -38,27 +34,19 @@ export class LinkedList<T> implements Iterable<LinkedNode<T>> {
     this.len++
   }
 
-  popBack(): LinkedNode<T> | undefined {
+  popBack(): T | undefined {
     if (!this.tail) {
       return
     }
-
-    const value = this.tail
-    this.tail = this.tail.prev
-    if (this.tail === null) {
-      this.head = null
-    } else {
-      this.tail.next = null
-    }
-    this.len--
-    return value
+    return this.remove(this.tail)
   }
 
-  peekBack(): LinkedNode<T> | undefined {
-    return this.tail ?? undefined
+  peekBack(): T | undefined {
+    return this.tail?.value
   }
 
-  pushFront(node: LinkedNode<T>): void {
+  pushFront(v: T): void {
+    const node = new LinkedNode(v)
     if (this.len === 0) {
       this.tail = node
     } else {
@@ -69,61 +57,53 @@ export class LinkedList<T> implements Iterable<LinkedNode<T>> {
     this.len++
   }
 
-  moveFront(node: LinkedNode<T>) {
-    this.remove(node)
-    this.pushFront(node)
-  }
-
-  popFront(): LinkedNode<T> | undefined {
+  popFront(): T | undefined {
     if (!this.head) {
       return
     }
-
-    const value = this.head
-    this.head = this.head.next
-    if (this.head === null) {
-      this.tail = null
-    } else {
-      this.head.prev = null
-    }
-    this.len--
-    return value
+    return this.remove(this.head)
   }
 
-  peekFront(): LinkedNode<T> | undefined {
-    return this.head ?? undefined
-  }
-
-  remove(node: LinkedNode<T>) {
+  private remove(node: LinkedNode<T>): T | undefined {
     if (this.len === 0) {
       return
     }
-    if (node === this.head) {
-      return this.popFront()
-    }
-    if (node === this.tail) {
-      return this.popBack()
+
+    const prev = node.prev
+    const next = node.next
+    if (prev) {
+      prev.next = next
+      node.prev = null
+    } else {
+      this.head = next
     }
 
-    node.prev!.next = node.next
-    node.next!.prev = node.prev
-    this.len--
-
-    return node
+    if (next) {
+      next.prev = prev
+      node.next = null
+    } else {
+      this.tail = prev
+    }
+    this.len -= 1
+    return node.value
   }
 
-  *values(): IterableIterator<LinkedNode<T>> {
+  peekFront(): T | undefined {
+    return this.head?.value
+  }
+
+  *values(): IterableIterator<T> {
     let current = this.head
     while (current !== null) {
-      yield current
+      yield current.value
       current = current.next
     }
   }
 
-  *reverse(): IterableIterator<LinkedNode<T>> {
+  *reverse(): IterableIterator<T> {
     let current = this.tail
     while (current !== null) {
-      yield current
+      yield current.value
       current = current.prev
     }
   }

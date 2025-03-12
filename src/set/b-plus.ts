@@ -21,7 +21,7 @@ export class BPlusTreeSet<T> implements Set<T> {
   }
 
   delete(v: T) {
-    return !!this.tree.delete(v)
+    return !!this.tree.remove(v)
   }
 
   clear() {

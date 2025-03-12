@@ -55,7 +55,7 @@
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "code-runner.executorMap": {
-    "typescript": "yarn ts-node"
+    "typescript": "yarn node -r ts-node/register --max-old-space-size=8192"
   },
   "jest.runMode": {
     "type": "watch",

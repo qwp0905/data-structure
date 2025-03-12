@@ -364,7 +364,7 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
     return this.root.has(k)
   }
 
-  delete(k: T): E | undefined {
+  remove(k: T): E | undefined {
     const minKeys = Math.ceil(this.degree / 2) - 1
     const deleted = this.root.delete(k, minKeys)
     if (!deleted) {

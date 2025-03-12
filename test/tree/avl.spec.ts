@@ -30,9 +30,9 @@ describe("AVL Tree", () => {
     tree.insert({ key: 15 })
     tree.insert({ key: 25 })
 
-    tree.delete(15)
-    tree.delete(30)
-    tree.delete(10)
+    tree.remove(15)
+    tree.remove(30)
+    tree.remove(10)
 
     expect(tree.get(10)).toBeUndefined()
     expect(tree.get(20)).toEqual({ key: 20 })
@@ -48,9 +48,9 @@ describe("AVL Tree", () => {
     tree.insert({ key: 15 })
     tree.insert({ key: 25 })
 
-    tree.delete(15)
-    tree.delete(30)
-    tree.delete(10)
+    tree.remove(15)
+    tree.remove(30)
+    tree.remove(10)
     tree.insert({ key: 5 })
     tree.insert({ key: 35 })
 
@@ -120,9 +120,9 @@ describe("AVL Tree", () => {
 
     expect(tree.length).toBe(5)
 
-    tree.delete(15)
-    tree.delete(30)
-    tree.delete(10)
+    tree.remove(15)
+    tree.remove(30)
+    tree.remove(10)
 
     expect(tree.length).toBe(2)
 

@@ -1,3 +1,5 @@
+import { LinkedList } from "./linked"
+
 interface Entry<T> {
   readonly key: T
 }
@@ -95,11 +97,11 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
   }
 
   insert(entry: E): E | undefined {
-    const buffered = []
+    const buffered = new LinkedList<SkipNode<T, E>>()
     let node: SkipNode<T, E> = this.head
     while (!!node.getBottom()) {
       if (node.getKey() === entry.key) {
-        buffered.length = 0
+        buffered.clear()
         return node.swapEntry(entry)
       }
       const next = node.getNext()!
@@ -108,7 +110,7 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
         continue
       }
 
-      buffered.push(node)
+      buffered.pushBack(node)
       node = node.getBottom()!
     }
 
@@ -117,18 +119,18 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     }
 
     if (node.getKey() === entry.key) {
-      buffered.length = 0
+      buffered.clear()
       return node.swapEntry(entry)
     }
 
-    buffered.push(node)
+    buffered.pushBack(node)
     this.len += 1
 
     const height = this.randomHeight()
     const delta = height - this._height + 1
 
     while (buffered.length > height) {
-      buffered.shift()
+      buffered.popFront()
     }
 
     for (let i = 0; i < delta; i += 1) {
@@ -141,13 +143,13 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
       this.tail = newTail
       this._height += 1
       if (buffered.length < height) {
-        buffered.unshift(newHead)
+        buffered.pushFront(newHead)
       }
     }
 
     let bottom: SkipNode<T, E> | null = null
     while (buffered.length) {
-      const prev = buffered.pop()!
+      const prev = buffered.popBack()!
       const next = prev.getNext()!
       const newNode = new SkipNode<T, E>(entry)
       newNode.setNext(next)
@@ -157,7 +159,7 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     }
   }
 
-  delete(k: T): E | undefined {
+  remove(k: T): E | undefined {
     let node: SkipNode<T, E> = this.head
     let removed: E | undefined = undefined
     let bottom: SkipNode<T, E> | null = null

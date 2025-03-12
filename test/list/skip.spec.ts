@@ -101,17 +101,17 @@ describe("SkipList", () => {
     expect(list.get(11)).toBeUndefined()
     expect(list.length).toBe(10)
 
-    expect(list.delete(1)).toEqual({ key: 1 })
-    expect(list.delete(2)).toEqual({ key: 2 })
-    expect(list.delete(3)).toEqual({ key: 3 })
-    expect(list.delete(4)).toEqual({ key: 4 })
-    expect(list.delete(5)).toEqual({ key: 5 })
-    expect(list.delete(6)).toEqual({ key: 6 })
-    expect(list.delete(7)).toEqual({ key: 7 })
-    expect(list.delete(8)).toEqual({ key: 8 })
-    expect(list.delete(9)).toEqual({ key: 9 })
-    expect(list.delete(10)).toEqual({ key: 10 })
-    expect(list.delete(11)).toBeUndefined()
+    expect(list.remove(1)).toEqual({ key: 1 })
+    expect(list.remove(2)).toEqual({ key: 2 })
+    expect(list.remove(3)).toEqual({ key: 3 })
+    expect(list.remove(4)).toEqual({ key: 4 })
+    expect(list.remove(5)).toEqual({ key: 5 })
+    expect(list.remove(6)).toEqual({ key: 6 })
+    expect(list.remove(7)).toEqual({ key: 7 })
+    expect(list.remove(8)).toEqual({ key: 8 })
+    expect(list.remove(9)).toEqual({ key: 9 })
+    expect(list.remove(10)).toEqual({ key: 10 })
+    expect(list.remove(11)).toBeUndefined()
     expect(list.length).toBe(0)
     expect(list.height).toBe(1)
   })
@@ -128,7 +128,7 @@ describe("SkipList", () => {
 
     const delete_list = [9, 2, 1, 5, 89, 23]
     for (const key of delete_list) {
-      expect(list.delete(key)).toEqual({ key })
+      expect(list.remove(key)).toEqual({ key })
     }
 
     for (let i = 1; i <= 100; i++) {
@@ -154,7 +154,7 @@ describe("SkipList", () => {
 
     const delete_list = [9, 2, 1, 5, 89, 23]
     for (const key of delete_list) {
-      expect(list.delete(key)).toEqual({ key })
+      expect(list.remove(key)).toEqual({ key })
     }
 
     for (let i = 1; i <= 100; i++) {
@@ -184,7 +184,7 @@ describe("SkipList", () => {
     expect(list.length).toBe(keys.size)
     expect(list.height).toBeLessThanOrEqual(keys.size)
     for (const key of keys) {
-      expect(list.delete(key)).toEqual({ key })
+      expect(list.remove(key)).toEqual({ key })
     }
     for (const key of keys) {
       expect(list.get(key)).toBeUndefined()
@@ -230,7 +230,7 @@ describe("SkipList", () => {
 
     const delete_list = [9, 2, 1, 5, 89, 23]
     for (const key of delete_list) {
-      expect(list.delete(key)).toEqual({ key })
+      expect(list.remove(key)).toEqual({ key })
     }
 
     const l = new Array(100)
@@ -271,7 +271,7 @@ describe("SkipList", () => {
 
     const delete_list = [9, 2, 1, 5, 89, 23]
     for (const key of delete_list) {
-      expect(list.delete(key)).toEqual({ key })
+      expect(list.remove(key)).toEqual({ key })
     }
 
     const l = new Array(10).fill(null).map((_, i) => ({ key: i + 10 }))

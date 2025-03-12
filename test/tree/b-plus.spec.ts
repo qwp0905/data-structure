@@ -27,7 +27,7 @@ function test() {
     tree.insert(new DefaultEntry(1))
     tree.insert(new DefaultEntry(2))
     tree.insert(new DefaultEntry(3))
-    expect(tree.delete(2)?.key).toBe(2)
+    expect(tree.remove(2)?.key).toBe(2)
     expect(tree.get(2)).toBeUndefined()
   })
 
@@ -43,14 +43,14 @@ function test() {
     tree.insert(new DefaultEntry(9))
     tree.insert(new DefaultEntry(10))
 
-    expect(tree.delete(2323)).toBeUndefined()
+    expect(tree.remove(2323)).toBeUndefined()
     expect(tree.get(2323)).toBeUndefined()
-    expect(tree.delete(45364)).toBeUndefined()
+    expect(tree.remove(45364)).toBeUndefined()
   })
 
   it("should return undefined if not found", () => {
     expect(tree.get(1)).toBeUndefined()
-    expect(tree.delete(1)).toBeUndefined()
+    expect(tree.remove(1)).toBeUndefined()
   })
 
   it("should return true if has", () => {
@@ -71,10 +71,10 @@ function test() {
     tree.insert(new DefaultEntry(150))
     tree.insert(new DefaultEntry(125))
     tree.insert(new DefaultEntry(175))
-    tree.delete(100)
-    tree.delete(50)
-    tree.delete(25)
-    tree.delete(75)
+    tree.remove(100)
+    tree.remove(50)
+    tree.remove(25)
+    tree.remove(75)
     expect(tree.has(100)).toBe(false)
     expect(tree.has(50)).toBe(false)
     expect(tree.has(25)).toBe(false)
@@ -108,8 +108,8 @@ function test() {
     tree.insert(new DefaultEntry(4))
     tree.insert(new DefaultEntry(5))
     tree.insert(new DefaultEntry(6))
-    tree.delete(3)
-    tree.delete(4)
+    tree.remove(3)
+    tree.remove(4)
     expect(tree.get(1)?.key).toBe(1)
     expect(tree.get(2)?.key).toBe(2)
     expect(tree.get(3)).toBeUndefined()
@@ -125,8 +125,8 @@ function test() {
     tree.insert(new DefaultEntry(4))
     tree.insert(new DefaultEntry(5))
     tree.insert(new DefaultEntry(6))
-    tree.delete(3)
-    tree.delete(4)
+    tree.remove(3)
+    tree.remove(4)
     tree.insert(new DefaultEntry(3))
     tree.insert(new DefaultEntry(4))
     expect(tree.get(1)?.key).toBe(1)
@@ -144,12 +144,12 @@ function test() {
     tree.insert(new DefaultEntry(4))
     tree.insert(new DefaultEntry(5))
     tree.insert(new DefaultEntry(6))
-    tree.delete(3)
-    tree.delete(4)
+    tree.remove(3)
+    tree.remove(4)
     tree.insert(new DefaultEntry(3))
     tree.insert(new DefaultEntry(4))
-    tree.delete(3)
-    tree.delete(4)
+    tree.remove(3)
+    tree.remove(4)
     expect(tree.get(1)?.key).toBe(1)
     expect(tree.get(2)?.key).toBe(2)
     expect(tree.get(3)).toBeUndefined()
@@ -165,7 +165,7 @@ function test() {
     }
 
     for (const e of tobeDelete) {
-      tree.delete(e)
+      tree.remove(e)
     }
 
     for (let i = 1; i < 100; i++) {
@@ -189,13 +189,13 @@ function test() {
     tree.insert(new DefaultEntry(3))
     tree.insert(new DefaultEntry(2))
     tree.insert(new DefaultEntry(1))
-    tree.delete(9)
-    tree.delete(8)
-    tree.delete(6)
-    tree.delete(7)
+    tree.remove(9)
+    tree.remove(8)
+    tree.remove(6)
+    tree.remove(7)
     tree.insert(new DefaultEntry(9))
     tree.insert(new DefaultEntry(8))
-    tree.delete(11)
+    tree.remove(11)
 
     expect(tree.get(1)?.key).toBe(1)
     expect(tree.get(2)?.key).toBe(2)
@@ -222,10 +222,10 @@ function test() {
     tree.insert(new DefaultEntry(9))
     tree.insert(new DefaultEntry(10))
     tree.insert(new DefaultEntry(11))
-    tree.delete(3)
-    tree.delete(1)
-    tree.delete(10)
-    tree.delete(11)
+    tree.remove(3)
+    tree.remove(1)
+    tree.remove(10)
+    tree.remove(11)
     expect(tree.get(1)).toBeUndefined()
     expect(tree.get(2)?.key).toBe(2)
     expect(tree.get(3)).toBeUndefined()
@@ -307,9 +307,9 @@ function test() {
       tree.insert(new DefaultEntry(i))
     }
 
-    expect(tree.delete(56)?.key).toBe(56)
-    expect(tree.delete(32)?.key).toBe(32)
-    expect(tree.delete(96)?.key).toBe(96)
+    expect(tree.remove(56)?.key).toBe(56)
+    expect(tree.remove(32)?.key).toBe(32)
+    expect(tree.remove(96)?.key).toBe(96)
 
     const result = [...tree.entries()]
     expect(result).toHaveLength(47)
@@ -338,9 +338,9 @@ function test() {
       tree.insert(new DefaultEntry(i))
     }
 
-    expect(tree.delete(56)?.key).toBe(56)
-    expect(tree.delete(32)?.key).toBe(32)
-    expect(tree.delete(96)?.key).toBe(96)
+    expect(tree.remove(56)?.key).toBe(56)
+    expect(tree.remove(32)?.key).toBe(32)
+    expect(tree.remove(96)?.key).toBe(96)
 
     const result = [...tree.range(30, 70)]
     expect(result).toHaveLength(18)

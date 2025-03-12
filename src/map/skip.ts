@@ -29,7 +29,7 @@ export class SkipListMap<K, V> implements Map<K, V> {
   }
 
   delete(key: K): boolean {
-    return !!this.inner.delete(key)
+    return !!this.inner.remove(key)
   }
 
   clear(): void {

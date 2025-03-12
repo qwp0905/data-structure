@@ -33,7 +33,7 @@ export class BPlusTreeMap<K, V> implements Map<K, V> {
   }
 
   delete(key: K): boolean {
-    return !!this.tree.delete(key)
+    return !!this.tree.remove(key)
   }
 
   clear() {

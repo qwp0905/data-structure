@@ -29,7 +29,7 @@ export class BTreeMap<K, V> implements Map<K, V> {
   }
 
   delete(k: K) {
-    return !!this.tree.delete(k)
+    return !!this.tree.remove(k)
   }
 
   clear() {
