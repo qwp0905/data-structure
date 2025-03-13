@@ -14,11 +14,11 @@ describe("Sorted List", () => {
   })
 
   it("should insert values in sorted order", () => {
-    list.insert(1)
-    list.insert(3)
-    list.insert(2)
-    list.insert(4)
-    list.insert(1)
+    expect(list.insert(1)).toBe(0)
+    expect(list.insert(3)).toBe(1)
+    expect(list.insert(2)).toBe(1)
+    expect(list.insert(4)).toBe(3)
+    expect(list.insert(1)).toBe(0)
 
     expect(list.length).toBe(5)
     expect(list.get(0)).toBe(1)
@@ -29,44 +29,44 @@ describe("Sorted List", () => {
   })
 
   it("should remove values", () => {
-    list.insert(1)
-    list.insert(2)
-    list.insert(3)
-    list.insert(4)
-    list.insert(5)
+    expect(list.insert(1)).toBe(0)
+    expect(list.insert(2)).toBe(1)
+    expect(list.insert(3)).toBe(2)
+    expect(list.insert(4)).toBe(3)
+    expect(list.insert(5)).toBe(4)
 
-    list.remove(3)
+    expect(list.remove(3)).toBe(2)
     expect(list.length).toBe(4)
     expect(list.get(0)).toBe(1)
     expect(list.get(1)).toBe(2)
     expect(list.get(2)).toBe(4)
     expect(list.get(3)).toBe(5)
 
-    list.remove(6)
+    expect(list.remove(6)).toBe(-1)
     expect(list.length).toBe(4)
 
-    list.remove(1)
+    expect(list.remove(1)).toBe(0)
     expect(list.length).toBe(3)
     expect(list.get(0)).toBe(2)
     expect(list.get(1)).toBe(4)
     expect(list.get(2)).toBe(5)
 
-    list.remove(5)
+    expect(list.remove(5)).toBe(2)
     expect(list.length).toBe(2)
     expect(list.get(0)).toBe(2)
     expect(list.get(1)).toBe(4)
 
-    list.remove(2)
-    list.remove(4)
+    expect(list.remove(2)).toBe(0)
+    expect(list.remove(4)).toBe(0)
     expect(list.length).toBe(0)
   })
 
   it("should find values", () => {
-    list.insert(1)
-    list.insert(2)
-    list.insert(3)
-    list.insert(4)
-    list.insert(5)
+    expect(list.insert(1)).toBe(0)
+    expect(list.insert(2)).toBe(1)
+    expect(list.insert(3)).toBe(2)
+    expect(list.insert(4)).toBe(3)
+    expect(list.insert(5)).toBe(4)
 
     expect(list.indexOf(3)).toBe(2)
     expect(list.includes(3)).toBe(true)
@@ -75,11 +75,11 @@ describe("Sorted List", () => {
   })
 
   it("should iterate over values", () => {
-    list.insert(1)
-    list.insert(2)
-    list.insert(3)
-    list.insert(4)
-    list.insert(5)
+    expect(list.insert(1)).toBe(0)
+    expect(list.insert(2)).toBe(1)
+    expect(list.insert(3)).toBe(2)
+    expect(list.insert(4)).toBe(3)
+    expect(list.insert(5)).toBe(4)
 
     const values = Array.from(list.values())
     expect(values).toEqual([1, 2, 3, 4, 5])

@@ -43,17 +43,19 @@ export abstract class SortedList<T> {
     return [low, false]
   }
 
-  insert(value: T) {
+  insert(value: T): number {
     const [index] = this.binarySearch(value)
     this.list.splice(index, 0, value)
+    return index
   }
 
-  remove(value: T) {
+  remove(value: T): number {
     const [index, found] = this.binarySearch(value)
     if (!found) {
-      return
+      return -1
     }
     this.list.splice(index, 1)
+    return index
   }
 
   get length() {
