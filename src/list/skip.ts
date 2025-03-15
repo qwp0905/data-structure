@@ -50,12 +50,20 @@ class SkipNode<T, E extends Entry<T>> {
   }
 }
 export class SkipList<T, E extends Entry<T> = Entry<T>> {
-  head = new SkipNode<T, E>()
-  tail = new SkipNode<T, E>()
+  private head = new SkipNode<T, E>()
+  private tail = new SkipNode<T, E>()
   private _height = 1
   private len = 0
   constructor(private readonly maxHeight: number = Infinity) {
     this.head.setNext(this.tail)
+  }
+
+  clear() {
+    this.head = new SkipNode<T, E>()
+    this.tail = new SkipNode<T, E>()
+    this.head.setNext(this.tail)
+    this._height = 1
+    this.len = 0
   }
 
   private randomHeight() {
