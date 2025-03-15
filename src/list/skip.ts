@@ -143,7 +143,7 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     }
 
     let bottom: SkipNode<T, E> | null = null
-    while (buffered.length) {
+    while (buffered.length > 0) {
       const prev = buffered.popBack()!
       const next = prev.getNext()!
       const newNode = new SkipNode<T, E>(entry)
