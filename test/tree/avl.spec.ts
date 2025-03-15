@@ -134,4 +134,10 @@ describe("AVL Tree", () => {
   it("should return undefined when getting from empty tree", () => {
     expect(tree.get(10)).toBeUndefined()
   })
+
+  it("should return undefined when deleting from empty tree", () => {
+    expect(tree.remove(10)).toBeUndefined()
+    expect(tree.remove(20)).toBeUndefined()
+    expect(tree.length).toBe(0)
+  })
 })
