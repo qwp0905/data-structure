@@ -235,7 +235,7 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     this.root = null
   }
 
-  *[Symbol.iterator]() {
+  *entries() {
     if (!this.root) {
       return
     }
@@ -248,4 +248,6 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     }
     yield* this.root.range(s, e)
   }
+
+  [Symbol.iterator] = this.entries
 }

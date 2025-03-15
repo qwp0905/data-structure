@@ -140,4 +140,21 @@ describe("AVL Tree", () => {
     expect(tree.remove(20)).toBeUndefined()
     expect(tree.length).toBe(0)
   })
+
+  it("should return sorted elements", () => {
+    const keys = Array.from(
+      new Set(
+        Array(100)
+          .fill(null)
+          .map(() => Math.random() * 10000)
+      )
+    )
+
+    for (const key of keys) {
+      tree.insert({ key })
+    }
+
+    const sorted = keys.sort((a, b) => a - b).map((key) => ({ key }))
+    expect(Array.from(tree.entries())).toEqual(sorted)
+  })
 })
