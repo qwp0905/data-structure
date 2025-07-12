@@ -3,7 +3,8 @@
   "packageManager": "yarn@4.6.0",
   "scripts": {
     "test": "jest",
-    "test:cov": "jest --coverage"
+    "test:cov": "jest --coverage",
+    "build": "tsc"
   },
   "jest": {
     "moduleFileExtensions": [
