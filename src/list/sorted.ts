@@ -1,4 +1,4 @@
-export abstract class SortedList<T> {
+export class SortedList<T> {
   private readonly list: T[] = []
   constructor(iterator?: Iterable<T>) {
     if (!iterator) {
@@ -10,7 +10,10 @@ export abstract class SortedList<T> {
     }
   }
 
-  protected abstract compare(a: T, b: T): number
+  protected compare?(a: T, b: T): number
+  private _compare(a: T, b: T): number {
+    return this.compare?.(a, b) ?? (a > b ? 1 : a < b ? -1 : 0)
+  }
 
   get(index: number) {
     return this.list[index]
@@ -31,7 +34,7 @@ export abstract class SortedList<T> {
     let high = this.list.length
     while (low < high) {
       const mid = low + Math.floor((high - low) / 2)
-      const cmp = this.compare(value, this.list[mid])
+      const cmp = this._compare(value, this.list[mid])
       if (cmp < 0) {
         high = mid
       } else if (cmp > 0) {
