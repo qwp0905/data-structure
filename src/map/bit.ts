@@ -1,17 +1,17 @@
+const SHIFT = 5
+const MASK = (1 << SHIFT) - 1
+
 export class Bitmap {
   private readonly bits: Uint32Array
   private _size = 0
 
   constructor(capacity: number) {
-    this.bits = new Uint32Array((capacity + 31) >>> 5)
-  }
-
-  private getPosition(bit: number) {
-    return [bit >>> 5, bit & 31]
+    this.bits = new Uint32Array((capacity + MASK) >>> SHIFT)
   }
 
   set(bit: number) {
-    const [i, b] = this.getPosition(bit)
+    const i = bit >>> SHIFT
+    const b = bit & MASK
     if (i >= this.bits.length) {
       return false
     }
@@ -25,7 +25,8 @@ export class Bitmap {
   }
 
   has(bit: number) {
-    const [i, b] = this.getPosition(bit)
+    const i = bit >>> SHIFT
+    const b = bit & MASK
     if (i >= this.bits.length) {
       return false
     }
@@ -33,7 +34,8 @@ export class Bitmap {
   }
 
   del(bit: number) {
-    const [i, b] = this.getPosition(bit)
+    const i = bit >>> SHIFT
+    const b = bit & MASK
     if (i >= this.bits.length) {
       return false
     }
@@ -48,5 +50,17 @@ export class Bitmap {
 
   get size() {
     return this._size
+  }
+
+  *values() {
+    for (let i = 0; i < this.bits.length; i += 1) {
+      const shift = i << SHIFT
+
+      for (let b = this.bits[i], j = 0; b > 0 && j <= MASK; j += 1, b >>>= 1) {
+        if (b & 1) {
+          yield shift + j
+        }
+      }
+    }
   }
 }

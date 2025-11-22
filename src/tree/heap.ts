@@ -20,7 +20,7 @@ export abstract class PriorityQueue<T> {
     this.heap.push(value)
     let i = this.heap.length - 1
     let p: number
-    while (i > 0 && this.compare(this.heap[(p = Math.floor((i - 1) / 2))], value) < 0) {
+    while (i > 0 && this.compare(this.heap[(p = (i - 1) >>> 1)], value) < 0) {
       this.swap(i, p)
       i = p
     }
@@ -40,7 +40,7 @@ export abstract class PriorityQueue<T> {
     this.heap[0] = last
     let i = 0
     let left
-    while ((left = i * 2 + 1) < this.heap.length) {
+    while ((left = (i << 1) + 1) < this.heap.length) {
       const right = left + 1
       let max = left
       if (right < this.heap.length && this.compare(this.heap[right], this.heap[left]) > 0) {
