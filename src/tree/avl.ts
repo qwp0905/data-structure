@@ -18,6 +18,7 @@ class Node<T, E extends Entry<T>> {
   rebalance() {
     const left = this.left?.height ?? 0
     const right = this.right?.height ?? 0
+    this.height = Math.max(left, right) + 1
     if (Math.abs(left - right) <= 1) {
       return this
     }
@@ -118,7 +119,6 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
       const [parent, direction] = stack.pop()!
       const key = direction === Direction.left ? "left" : "right"
       parent[key] = current
-      parent.height = Math.max(parent.height, current.height + 1)
       current = parent.rebalance()
     }
 
@@ -188,7 +188,6 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
       const [parent, direction] = stack.pop()!
       const key = direction === Direction.left ? "left" : "right"
       parent[key] = current
-      parent.height = Math.max(parent.left?.height ?? 0, parent.right?.height ?? 0) + 1
       current = parent.rebalance()
     }
 
