@@ -2,6 +2,11 @@ interface Entry<T> {
   readonly key: T
 }
 
+enum Direction {
+  left,
+  right
+}
+
 class Node<T, E extends Entry<T>> {
   left: Node<T, E> | null = null
   right: Node<T, E> | null = null
@@ -10,54 +15,7 @@ class Node<T, E extends Entry<T>> {
     public height = 1
   ) {}
 
-  insert(entry: E): [Node<T, E>, E | null] {
-    if (entry.key === this.entry.key) {
-      const prev = this.entry
-      this.entry = entry
-      return [this, prev]
-    }
-    if (entry.key < this.entry.key) {
-      if (!this.left) {
-        this.left = new Node(entry)
-        this.height = Math.max(2, this.height)
-        return [this, null]
-      }
-
-      const [node, prev] = this.left.insert(entry)
-      if (prev) {
-        return [this, prev]
-      }
-      this.left = node
-      this.height = Math.max(this.left.height + 1, this.height)
-      return [this.rebalance(), null]
-    }
-
-    if (!this.right) {
-      this.right = new Node(entry)
-      this.height = Math.max(2, this.height)
-      return [this, null]
-    }
-
-    const [node, prev] = this.right.insert(entry)
-    if (prev) {
-      return [this, prev]
-    }
-    this.right = node
-    this.height = Math.max(this.right.height + 1, this.height)
-    return [this.rebalance(), null]
-  }
-
-  get(k: T): E | undefined {
-    if (k === this.entry.key) {
-      return this.entry
-    }
-    if (k < this.entry.key) {
-      return this.left?.get(k)
-    }
-    return this.right?.get(k)
-  }
-
-  private rebalance() {
+  rebalance() {
     const left = this.left?.height ?? 0
     const right = this.right?.height ?? 0
     if (Math.abs(left - right) <= 1) {
@@ -78,72 +36,19 @@ class Node<T, E extends Entry<T>> {
     return this.rotateRight()
   }
 
-  private getPredecessor() {
+  getPredecessor() {
     let node = this as Node<T, E>
     while (node?.right) {
       node = node.right
     }
     return node
   }
-  private getSuccessor() {
+  getSuccessor() {
     let node = this as Node<T, E>
     while (node?.left) {
       node = node.left
     }
     return node
-  }
-
-  delete(k: T): [Node<T, E> | null, E | null] {
-    if (k === this.entry.key) {
-      if (!this.left && !this.right) {
-        return [null, this.entry]
-      }
-
-      const entry = this.entry
-      if (this.left) {
-        const pred = this.left.getPredecessor()
-        this.entry = pred.entry
-        const [node] = this.left.delete(pred.entry.key)
-        this.left = node
-        this.height = Math.max(this.left?.height ?? 0, this.right?.height ?? 0) + 1
-        return [this.rebalance(), entry]
-      }
-
-      const suc = this.right!.getSuccessor()
-      this.entry = suc.entry
-      const [node] = this.right!.delete(suc.entry.key)
-      this.right = node
-      this.height = (this.right?.height ?? 0) + 1
-      return [this.rebalance(), entry]
-    }
-
-    if (k < this.entry.key) {
-      if (!this.left) {
-        return [null, null]
-      }
-
-      const [node, deleted] = this.left.delete(k)
-      if (!deleted) {
-        return [null, null]
-      }
-
-      this.left = node
-      this.height = Math.max(this.left?.height ?? 0, this.right?.height ?? 0) + 1
-      return [this.rebalance(), deleted]
-    }
-
-    if (!this.right) {
-      return [null, null]
-    }
-
-    const [node, deleted] = this.right.delete(k)
-    if (!deleted) {
-      return [null, null]
-    }
-
-    this.right = node
-    this.height = Math.max(this.left?.height ?? 0, this.right?.height ?? 0) + 1
-    return [this.rebalance(), deleted]
   }
 
   private rotateLeft() {
@@ -187,6 +92,16 @@ class Node<T, E extends Entry<T>> {
   }
 }
 
+function compare<T>(a: T, b: T): number {
+  if (a < b) {
+    return -1
+  } else if (a > b) {
+    return 1
+  } else {
+    return 0
+  }
+}
+
 export class AVLTree<T, E extends Entry<T> = Entry<T>> {
   private root: Node<T, E> | null = null
   private len = 0
@@ -202,31 +117,105 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
       return
     }
 
-    const [node, prev] = this.root.insert(entry)
-    this.root = node
-    if (prev) {
-      return prev
+    let current = this.root as Node<T, E> | null
+    const stack: [Node<T, E>, Direction][] = []
+
+    while (current) {
+      const currentEntry = current.entry
+      const cmp = compare(entry.key, currentEntry.key)
+      if (cmp === 0) {
+        current.entry = entry
+        return currentEntry
+      } else if (cmp < 0) {
+        stack.push([current, Direction.left])
+        current = current.left
+      } else {
+        stack.push([current, Direction.right])
+        current = current.right
+      }
     }
 
+    current = new Node(entry)
+    while (stack.length > 0) {
+      const [parent, direction] = stack.pop()!
+      const key = direction === Direction.left ? "left" : "right"
+      parent[key] = current
+      parent.height = Math.max(parent.height, current.height + 1)
+      current = parent.rebalance()
+    }
+
+    this.root = current
     this.len += 1
   }
 
   get(k: T): E | undefined {
-    return this.root?.get(k)
+    let current = this.root as Node<T, E> | null
+    while (current) {
+      const cmp = compare(k, current.entry.key)
+      if (cmp === 0) {
+        return current.entry
+      } else if (cmp < 0) {
+        current = current.left
+      } else {
+        current = current.right
+      }
+    }
   }
 
   remove(k: T): E | undefined {
-    if (!this.root) {
+    let current = this.root as Node<T, E> | null
+    const stack: [Node<T, E>, Direction][] = []
+
+    while (current) {
+      const cmp = compare(k, current.entry.key)
+      if (cmp < 0) {
+        stack.push([current, Direction.left])
+        current = current.left
+        continue
+      } else if (cmp > 0) {
+        stack.push([current, Direction.right])
+        current = current.right
+        continue
+      }
+
+      if (current.left) {
+        const pred = current.left.getPredecessor()
+        const entry = pred.entry
+        pred.entry = current.entry
+        current.entry = entry
+        stack.push([current, Direction.left])
+        current = current.left
+        continue
+      }
+      if (current.right) {
+        const suc = current.right.getSuccessor()
+        const entry = suc.entry
+        suc.entry = current.entry
+        current.entry = entry
+        stack.push([current, Direction.right])
+        current = current.right
+        continue
+      }
+      break
+    }
+
+    if (!current) {
       return
     }
 
-    const [node, deleted] = this.root.delete(k)
-    if (!deleted) {
-      return
+    const deleted = current.entry
+    current = null
+
+    while (stack.length > 0) {
+      const [parent, direction] = stack.pop()!
+      const key = direction === Direction.left ? "left" : "right"
+      parent[key] = current
+      parent.height = Math.max(parent.left?.height ?? 0, parent.right?.height ?? 0) + 1
+      current = parent.rebalance()
     }
 
+    this.root = current
     this.len -= 1
-    this.root = node
     return deleted
   }
 
