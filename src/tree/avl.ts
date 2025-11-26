@@ -247,7 +247,7 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
         if (scmp <= 0 && ecmp > 0) {
           yield current.entry
         }
-      } while (!current.right && stack.length > 0)
+      } while ((!current.right || ecmp <= 0) && stack.length > 0)
 
       if (current.right && ecmp > 0) {
         const key = current.right.entry.key
