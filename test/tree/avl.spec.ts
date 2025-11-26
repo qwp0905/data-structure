@@ -78,6 +78,14 @@ describe("AVL Tree", () => {
     expect(keys).toEqual([15, 20])
   })
 
+  it("should iterate over range 2", () => {
+    for (let i = 0; i < 1000; i += 1) {
+      tree.insert({ key: i })
+    }
+
+    expect(Array.from(tree.range(21, 24)).map((e) => e.key)).toEqual([21, 22, 23])
+  })
+
   it("should iterate over elements", () => {
     tree.insert({ key: 10 })
     tree.insert({ key: 20 })
