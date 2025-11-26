@@ -68,15 +68,15 @@ class Node<T, E extends Entry<T>> {
     node.height = Math.max(node.right?.height ?? 0, node.left.height) + 1
     return node
   }
-}
 
-function compare<T>(a: T, b: T): number {
-  if (a < b) {
-    return -1
-  } else if (a > b) {
-    return 1
-  } else {
-    return 0
+  cmp(key: T) {
+    if (key < this.entry.key) {
+      return -1
+    } else if (key > this.entry.key) {
+      return 1
+    } else {
+      return 0
+    }
   }
 }
 
@@ -100,7 +100,7 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
 
     while (current) {
       const currentEntry = current.entry
-      const cmp = compare(entry.key, currentEntry.key)
+      const cmp = current.cmp(entry.key)
       if (cmp === 0) {
         current.entry = entry
         return currentEntry
@@ -129,7 +129,7 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
   get(k: T): E | undefined {
     let current = this.root as Node<T, E> | null
     while (current) {
-      const cmp = compare(k, current.entry.key)
+      const cmp = current.cmp(k)
       if (cmp === 0) {
         return current.entry
       } else if (cmp < 0) {
@@ -145,7 +145,7 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     const stack: [Node<T, E>, Direction][] = []
 
     while (current) {
-      const cmp = compare(k, current.entry.key)
+      const cmp = current.cmp(k)
       if (cmp < 0) {
         stack.push([current, Direction.left])
         current = current.left
@@ -231,14 +231,11 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
       return
     }
 
-    const stack: [Node<T, E>, number, number][] = [
-      [this.root, compare(s, this.root.entry.key), compare(e, this.root.entry.key)]
-    ]
+    const stack: [Node<T, E>, number, number][] = [[this.root, this.root.cmp(s), this.root.cmp(e)]]
     while (stack.length > 0) {
       let [current, scmp, ecmp] = stack.at(-1)!
       if (current.left && scmp < 0) {
-        const key = current.left.entry.key
-        stack.push([current.left, compare(s, key), compare(e, key)])
+        stack.push([current.left, current.left.cmp(s), current.left.cmp(e)])
         continue
       }
 
@@ -250,8 +247,7 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
       } while ((!current.right || ecmp <= 0) && stack.length > 0)
 
       if (current.right && ecmp > 0) {
-        const key = current.right.entry.key
-        stack.push([current.right, compare(s, key), compare(e, key)])
+        stack.push([current.right, current.right.cmp(s), current.right.cmp(e)])
       }
     }
   }
