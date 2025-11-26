@@ -68,28 +68,6 @@ class Node<T, E extends Entry<T>> {
     node.height = Math.max(node.right?.height ?? 0, node.left.height) + 1
     return node
   }
-
-  *entries(): IterableIterator<E> {
-    if (this.left) {
-      yield* this.left.entries()
-    }
-    yield this.entry
-    if (this.right) {
-      yield* this.right.entries()
-    }
-  }
-
-  *range(s: T, e: T): IterableIterator<E> {
-    if (this.left && s < this.entry.key) {
-      yield* this.left.range(s, e)
-    }
-    if (s <= this.entry.key && e > this.entry.key) {
-      yield this.entry
-    }
-    if (this.right && e > this.entry.key) {
-      yield* this.right.range(s, e)
-    }
-  }
 }
 
 function compare<T>(a: T, b: T): number {
@@ -228,14 +206,54 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     if (!this.root) {
       return
     }
-    yield* this.root.entries()
+
+    const stack: Node<T, E>[] = [this.root]
+    while (stack.length > 0) {
+      let current = stack.at(-1)!
+      if (current.left) {
+        stack.push(current.left)
+        continue
+      }
+
+      do {
+        current = stack.pop()!
+        yield current.entry
+      } while (!current.right && stack.length > 0)
+
+      if (current.right) {
+        stack.push(current.right)
+      }
+    }
   }
 
   *range(s: T, e: T) {
     if (!this.root) {
       return
     }
-    yield* this.root.range(s, e)
+
+    const stack: [Node<T, E>, number, number][] = [
+      [this.root, compare(s, this.root.entry.key), compare(e, this.root.entry.key)]
+    ]
+    while (stack.length > 0) {
+      let [current, scmp, ecmp] = stack.at(-1)!
+      if (current.left && scmp < 0) {
+        const key = current.left.entry.key
+        stack.push([current.left, compare(s, key), compare(e, key)])
+        continue
+      }
+
+      do {
+        ;[current, scmp, ecmp] = stack.pop()!
+        if (scmp <= 0 && ecmp > 0) {
+          yield current.entry
+        }
+      } while (!current.right && stack.length > 0)
+
+      if (current.right && ecmp >= 0) {
+        const key = current.right.entry.key
+        stack.push([current.right, compare(s, key), compare(e, key)])
+      }
+    }
   }
 
   [Symbol.iterator] = this.entries
