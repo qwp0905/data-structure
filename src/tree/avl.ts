@@ -249,7 +249,7 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
         }
       } while (!current.right && stack.length > 0)
 
-      if (current.right && ecmp >= 0) {
+      if (current.right && ecmp > 0) {
         const key = current.right.entry.key
         stack.push([current.right, compare(s, key), compare(e, key)])
       }
