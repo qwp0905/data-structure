@@ -311,12 +311,9 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
       index = 0
     }
     while (leaf && leaf.entries[index].key < e) {
-      for (let i = index; i < leaf.entries.length; i += 1) {
-        const entry = leaf.entries[i]
-        if (entry.key >= e) {
-          return
-        }
-        yield entry
+      yield leaf.entries[index]
+      if (++index < leaf.entries.length) {
+        continue
       }
       leaf = leaf[next]
       index = 0
