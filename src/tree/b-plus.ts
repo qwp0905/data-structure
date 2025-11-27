@@ -11,69 +11,34 @@ class Leaf<T, E extends Entry<T>> {
   entries: E[] = [];
   [next]: Leaf<T, E> | null = null
 
-  search(k: T): [number, boolean] {
+  search(k: T): [number, E | null] {
     let left = 0
     let right = this.entries.length - 1
     while (left <= right) {
-      const mid = Math.floor((left + right) / 2)
-      if (this.entries[mid].key > k) {
+      const mid = (left + right) >>> 1
+      const entry = this.entries[mid]
+      if (entry.key > k) {
         right = mid - 1
-      } else if (this.entries[mid].key < k) {
+      } else if (entry.key < k) {
         left = mid + 1
       } else {
-        return [mid, true]
+        return [mid, entry]
       }
     }
-    return [left, false]
+    return [left, null]
   }
 
-  top() {
-    return this.entries[0].key
-  }
-
-  insert(entry: E, maxKeys: number): [T | null, Node<T, E> | null, E | null] {
-    const [index, found] = this.search(entry.key)
-    if (found) {
-      const prev = this.entries[index]
-      this.entries[index] = entry
-      return [null, null, prev]
-    }
-
-    this.entries.splice(index, 0, entry)
-    if (this.entries.length < maxKeys) {
-      return [this.entries[0].key, null, null]
-    }
-
-    const mid = Math.floor(this.entries.length / 2)
+  split() {
+    const mid = this.entries.length >>> 1
     const node = new Leaf<T, E>()
     node.entries = this.entries.splice(mid)
     node[next] = this[next]
     this[next] = node
-    return [node.top(), Node.leaf(node), null]
+    return node
   }
 
-  get(k: T): E | undefined {
-    const [index, found] = this.search(k)
-    if (!found) {
-      return
-    }
-
-    return this.entries[index]
-  }
-
-  has(k: T): boolean {
-    const [, found] = this.search(k)
-    return found
-  }
-
-  delete(k: T): E | null {
-    const [index, found] = this.search(k)
-    if (!found) {
-      return null
-    }
-
-    const [deleted] = this.entries.splice(index, 1)
-    return deleted
+  top() {
+    return this.entries[0].key
   }
 }
 class Internal<T, E extends Entry<T>> {
@@ -84,7 +49,7 @@ class Internal<T, E extends Entry<T>> {
     let left = 0
     let right = this.keys.length - 1
     while (left <= right) {
-      const mid = Math.floor((left + right) / 2)
+      const mid = (left + right) >>> 1
       if (this.keys[mid] > k) {
         right = mid - 1
       } else {
@@ -95,179 +60,23 @@ class Internal<T, E extends Entry<T>> {
     return left
   }
 
-  insert(entry: E, maxKeys: number): [T | null, Node<T, E> | null, E | null] {
-    const index = this.search(entry.key)
-    const [top, node, inserted] = this.children[index].insert(entry, maxKeys)
-    if (!node) {
-      if (index > 0 && this.children[index].isLeaf()) {
-        this.keys[index - 1] = this.children[index].leaf!.top()
-      }
-
-      return [null, null, inserted]
-    }
-
-    this.keys.splice(index, 0, top!)
-    this.children.splice(index + 1, 0, node)
-    if (this.keys.length < maxKeys) {
-      return [null, null, inserted]
-    }
-
-    const mid = Math.floor(this.keys.length / 2) + 1
+  split(): [T, Node<T, E>] {
+    const mid = (this.keys.length >>> 1) + 1
     const splitted = new Internal<T, E>()
     splitted.keys = this.keys.splice(mid)
     splitted.children = this.children.splice(mid)
-    const key = this.keys.pop()!
-    return [key, Node.internal(splitted), inserted]
+    return [this.keys.pop()!, Node.internal(splitted)]
   }
 
-  get(k: T): E | undefined {
-    return this.children[this.search(k)].get(k)
-  }
-
-  has(k: T): boolean {
-    const index = this.search(k)
-    if (this.keys[index - 1] === k) {
-      return true
-    }
-    return this.children[index].has(k)
-  }
-
-  private getSuccessor() {
+  getSuccessor() {
     let node = this as Internal<T, E>
-    while (!node.children[0].isLeaf()) {
+    while (!node.children[0].leaf) {
       node = node.children[0].internal!
     }
     return node.children[0].leaf!.top()
   }
-
-  delete(k: T, minKeys: number): E | null {
-    const index = this.search(k)
-    const leaf = this.children[index].leaf
-    if (leaf) {
-      const deleted = leaf.delete(k)
-      if (!deleted) {
-        return null
-      }
-
-      if (leaf.entries.length >= minKeys) {
-        if (index > 0) {
-          this.keys[index - 1] = leaf.top()
-        }
-        return deleted
-      }
-
-      const left = this.children[index - 1]?.leaf
-      if (left && left.entries.length > minKeys) {
-        const entry = left.entries.pop()!
-        leaf.entries.unshift(entry)
-        this.keys[index - 1] = entry.key
-        return deleted
-      }
-
-      const right = this.children[index + 1]?.leaf
-      if (right && right.entries.length > minKeys) {
-        const entry = right.entries.shift()!
-        leaf.entries.push(entry)
-        this.keys[index] = right.top()
-        return deleted
-      }
-
-      if (left) {
-        left.entries.push(...leaf.entries)
-        left[next] = leaf[next]
-        this.keys.splice(index - 1, 1)
-        this.children.splice(index, 1)
-        return deleted
-      }
-
-      leaf.entries.push(...right!.entries)
-      leaf[next] = right![next]
-      this.keys.splice(index, 1)
-      this.children.splice(index + 1, 1)
-      return deleted
-    }
-
-    const internal = this.children[index].internal!
-    const found = index > 0 && this.keys[index - 1] === k
-    const deleted = internal.delete(k, minKeys)
-    if (!deleted) {
-      return null
-    }
-
-    if (found) {
-      this.keys[index - 1] = internal.getSuccessor()
-    }
-    if (internal.keys.length >= minKeys) {
-      return deleted
-    }
-
-    const left = this.children[index - 1]?.internal
-    if (left && left.keys.length > minKeys) {
-      const key = left.keys.pop()!
-      const child = left.children.pop()!
-      internal.children.unshift(child)
-      internal.keys.unshift(this.keys[index - 1])
-      this.keys[index - 1] = key
-      return deleted
-    }
-
-    const right = this.children[index + 1]?.internal
-    if (right && right.keys.length > minKeys) {
-      const key = right.keys.shift()!
-      const child = right.children.shift()!
-      internal.children.push(child)
-      internal.keys.push(this.keys[index])
-      this.keys[index] = key
-      return deleted
-    }
-
-    if (left) {
-      left.keys.push(this.keys[index - 1])
-      left.keys.push(...internal.keys)
-      left.children.push(...internal.children)
-      this.keys.splice(index - 1, 1)
-      this.children.splice(index, 1)
-      return deleted
-    }
-
-    internal.keys.push(this.keys[index])
-    internal.keys.push(...right!.keys)
-    internal.children.push(...right!.children)
-    this.keys.splice(index, 1)
-    this.children.splice(index + 1, 1)
-    return deleted
-  }
 }
 
-class Cursor<T, E extends Entry<T>> implements IterableIterator<E> {
-  constructor(
-    private current: Leaf<T, E> | null,
-    private index: number,
-    private readonly end: T
-  ) {}
-
-  [Symbol.iterator]() {
-    return this
-  }
-
-  next(): IteratorResult<E> {
-    if (this.index === this.current!.entries.length) {
-      this.current = this.current![next]
-      this.index = 0
-    }
-
-    if (!this.current) {
-      return { done: true, value: undefined }
-    }
-
-    const current = this.current!.entries[this.index++]
-    if (current.key >= this.end) {
-      return { done: true, value: undefined }
-    }
-
-    return { done: false, value: current }
-  }
-}
 class Node<T, E extends Entry<T>> {
   constructor(
     public internal: Internal<T, E> | null,
@@ -280,52 +89,6 @@ class Node<T, E extends Entry<T>> {
 
   static internal<T, E extends Entry<T>>(internal: Internal<T, E>) {
     return new Node<T, E>(internal, null)
-  }
-
-  isLeaf() {
-    return !!this.leaf
-  }
-
-  insert(entry: E, maxKeys: number) {
-    if (this.isLeaf()) {
-      return this.leaf!.insert(entry, maxKeys)
-    } else {
-      return this.internal!.insert(entry, maxKeys)
-    }
-  }
-
-  get(k: T) {
-    if (this.isLeaf()) {
-      return this.leaf!.get(k)
-    } else {
-      return this.internal!.get(k)
-    }
-  }
-
-  has(k: T): boolean {
-    if (this.isLeaf()) {
-      return this.leaf!.has(k)
-    } else {
-      return this.internal!.has(k)
-    }
-  }
-
-  delete(k: T, minKeys: number) {
-    if (this.isLeaf()) {
-      return this.leaf!.delete(k)
-    } else {
-      return this.internal!.delete(k, minKeys)
-    }
-  }
-
-  range(s: T, e: T): IterableIterator<E> {
-    let node = this as Node<T, E>
-    while (!node.isLeaf()) {
-      const index = node.internal!.search(s)
-      node = node.internal!.children[s === node.internal!.keys[index - 1] ? index - 1 : index]
-    }
-    const [index] = node.leaf!.search(s)
-    return new Cursor(node.leaf!, index, e)
   }
 }
 
@@ -340,57 +103,236 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
   }
 
   insert(entry: E): E | undefined {
-    const [key, node, prev] = this.root.insert(entry, this.degree)
-    if (prev) {
-      return prev
+    let current = this.root as Node<T, E>
+    const stack: [number, Internal<T, E>][] = []
+    while (!current.leaf) {
+      const internal = current.internal!
+      const index = internal.search(entry.key)
+      stack.push([index, internal])
+      current = internal.children[index]
+    }
+
+    const leaf = current.leaf
+    const [index, found] = leaf.search(entry.key)
+    if (found) {
+      leaf.entries[index] = entry
+      return found
     }
 
     this.len += 1
-    if (!node) {
+    leaf.entries.splice(index, 0, entry)
+
+    if (leaf.entries.length < this.degree) {
+      if (stack.length === 0) {
+        return
+      }
+
+      const [index, parent] = stack.pop()!
+      if (index > 0) {
+        parent.keys[index - 1] = leaf.top()
+      }
       return
     }
 
+    const splitted = leaf.split()
+    let evicted: [T, Node<T, E>] = [splitted.top(), Node.leaf(splitted)]
+
+    while (stack.length > 0) {
+      const [index, parent] = stack.pop()!
+      if (!evicted) {
+        if (index > 0 && parent.children[index].leaf) {
+          parent.keys[index - 1] = parent.children[index].leaf.top()
+        }
+        continue
+      }
+
+      const [key, node] = evicted
+      parent.keys.splice(index, 0, key)
+      parent.children.splice(index + 1, 0, node)
+      if (parent.keys.length < this.degree) {
+        return
+      }
+
+      evicted = parent.split()
+    }
+
+    const [key, node] = evicted
     const internal = new Internal<T, E>()
-    internal.keys = [key!]
+    internal.keys = [key]
     internal.children = [this.root, node]
     this.root = Node.internal(internal)
   }
 
   get(k: T): E | undefined {
-    return this.root.get(k)
+    let node = this.root as Node<T, E>
+    while (!node.leaf) {
+      const index = node.internal!.search(k)
+      node = node.internal!.children[index]
+    }
+    const [, found] = node.leaf.search(k)
+    if (!found) {
+      return
+    }
+    return found
   }
 
   has(k: T): boolean {
-    return this.root.has(k)
+    let node = this.root as Node<T, E>
+    while (!node.leaf) {
+      const index = node.internal!.search(k)
+      node = node.internal!.children[index]
+    }
+    const [, found] = node.leaf.search(k)
+    return !!found
   }
 
   remove(k: T): E | undefined {
-    const minKeys = Math.ceil(this.degree / 2) - 1
-    const deleted = this.root.delete(k, minKeys)
-    if (!deleted) {
+    const minKeys = ((this.degree + 1) >>> 1) - 1
+
+    let current = this.root as Node<T, E>
+    const stack: [number, Internal<T, E>][] = []
+
+    while (!current.leaf) {
+      const internal = current.internal!
+      const index = internal.search(k)
+      stack.push([index, internal])
+      current = internal.children[index]
+    }
+
+    const leaf = current.leaf
+    const [index, found] = leaf.search(k)
+    if (!found) {
       return
     }
 
+    leaf.entries.splice(index, 1)
     this.len -= 1
-    if (this.root.isLeaf()) {
-      return deleted
+
+    while (stack.length > 0) {
+      const [index, parent] = stack.pop()!
+      const leaf = parent.children[index].leaf
+      if (leaf) {
+        if (leaf.entries.length >= minKeys) {
+          if (index > 0) {
+            parent.keys[index - 1] = leaf.top()
+          }
+          return found
+        }
+
+        const left = parent.children[index - 1]?.leaf
+        if (left && left.entries.length > minKeys) {
+          const entry = left.entries.pop()!
+          leaf.entries = [entry].concat(leaf.entries)
+          parent.keys[index - 1] = entry.key
+          return found
+        }
+
+        const right = parent.children[index + 1]?.leaf
+        if (right && right.entries.length > minKeys) {
+          const entry = right.entries.shift()!
+          leaf.entries = leaf.entries.concat([entry])
+          parent.keys[index] = right.top()
+          return found
+        }
+
+        if (left) {
+          left.entries = left.entries.concat(leaf.entries)
+          left[next] = leaf[next]
+          parent.keys.splice(index - 1, 1)
+          parent.children.splice(index, 1)
+          continue
+        }
+
+        leaf.entries = leaf.entries.concat(right!.entries)
+        leaf[next] = right![next]
+        parent.keys.splice(index, 1)
+        parent.children.splice(index + 1, 1)
+        continue
+      }
+
+      const internal = parent.children[index].internal!
+      if (index > 0 && internal.keys[index - 1] === k) {
+        internal.keys[index - 1] = internal.getSuccessor()
+      }
+      if (internal.keys.length >= minKeys) {
+        return found
+      }
+
+      const left = parent.children[index - 1]?.internal
+      if (left && left.keys.length > minKeys) {
+        const key = left.keys.pop()!
+        const child = left.children.pop()!
+        internal.children = [child].concat(internal.children)
+        internal.keys = [parent.keys[index - 1]].concat(internal.keys)
+        parent.keys[index - 1] = key
+        return found
+      }
+
+      const right = parent.children[index + 1]?.internal
+      if (right && right.keys.length > minKeys) {
+        const key = right.keys.shift()!
+        const child = right.children.shift()!
+        internal.children = internal.children.concat([child])
+        internal.keys = internal.keys.concat([parent.keys[index]])
+        parent.keys[index] = key
+        return found
+      }
+
+      if (left) {
+        left.keys = left.keys.concat(parent.keys[index - 1]).concat(internal.keys)
+        left.children = left.children.concat(internal.children)
+        parent.keys.splice(index - 1, 1)
+        parent.children.splice(index, 1)
+        continue
+      }
+
+      internal.keys = internal.keys.concat(parent.keys[index]).concat(right!.keys)
+      internal.children = internal.children.concat(right!.children)
+      parent.keys.splice(index, 1)
+      parent.children.splice(index + 1, 1)
+    }
+
+    if (this.root.leaf) {
+      return found
     }
 
     if (this.root.internal!.keys.length > 0) {
-      return deleted
+      return found
     }
 
     this.root = this.root.internal!.children[0]
-    return deleted
+    return found
   }
 
   *range(s: T, e: T): IterableIterator<E> {
-    yield* this.root.range(s, e)
+    let node = this.root as Node<T, E>
+    while (!node.leaf) {
+      const index = node.internal!.search(s)
+      node = node.internal!.children[s === node.internal!.keys[index - 1] ? index - 1 : index]
+    }
+
+    let leaf: Leaf<T, E> | null = node.leaf
+    let [index] = leaf.search(s)
+    if (index === leaf.entries.length) {
+      leaf = leaf[next]
+      index = 0
+    }
+    while (leaf && leaf.entries[index].key < e) {
+      for (let i = index; i < leaf.entries.length; i += 1) {
+        const entry = leaf.entries[i]
+        if (entry.key >= e) {
+          return
+        }
+        yield entry
+      }
+      leaf = leaf[next]
+      index = 0
+    }
   }
 
   *entries() {
     let node = this.root
-    while (!node.isLeaf()) {
+    while (!node.leaf) {
       node = node.internal!.children[0]
     }
 
