@@ -98,7 +98,7 @@ class Node<T, E extends Entry<T>> {
     return this.children[index].get(k)
   }
 
-  private swapPredecessor(entry: E) {
+  swapPredecessor(entry: E) {
     let node = this as Node<T, E>
     while (!node.isLeaf()) {
       node = node.children.at(-1)!
@@ -261,23 +261,91 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
       return
     }
 
-    const minKeys = Math.ceil(this.degree / 2) - 1
-    const deleted = this.root.delete(k, minKeys, this.degree)
-    if (!deleted) {
-      return
+    const minKeys = ((this.degree + 1) >>> 1) - 1
+
+    let current = this.root as Node<T, E>
+    const stack: [number, Node<T, E>][] = []
+
+    while (!current.isLeaf()) {
+      const [index, found] = current.search(k)
+      if (found) {
+        current.entries[index] = current.children[index].swapPredecessor(found)
+      }
+
+      stack.push([index, current])
+      current = current.children[index]
     }
 
+    const [index, found] = current.search(k)
+    if (!found) {
+      return
+    }
+    current.entries.splice(index, 1)
     this.len -= 1
+
+    while (stack.length > 0) {
+      const [index, parent] = stack.pop()!
+      const child = parent.children[index]
+      if (child.entries.length >= minKeys) {
+        continue
+      }
+
+      const isLeaf = parent.children[index].isLeaf()
+      const left = parent.children[index - 1]
+      const right = parent.children[index + 1]
+
+      if (isLeaf && left?.entries.length > minKeys) {
+        const entry = parent.entries[index - 1]
+        parent.children[index].entries.unshift(entry)
+        parent.entries[index - 1] = left.entries.pop()!
+        continue
+      }
+
+      if (isLeaf && right?.entries.length > minKeys) {
+        const entry = parent.entries[index]
+        parent.children[index].entries.push(entry)
+        parent.entries[index] = right.entries.shift()!
+        continue
+      }
+
+      if (left) {
+        const [entry] = parent.entries.splice(index - 1, 1)
+        const [node] = parent.children.splice(index, 1)
+        left.entries = left.entries.concat(entry).concat(node.entries)
+        left.children = left.children.concat(node.children)
+        if (left.entries.length < this.degree) {
+          continue
+        }
+
+        const [en, rn] = left.split()
+        parent.entries.splice(index - 1, 0, en)
+        parent.children.splice(index, 0, rn)
+        continue
+      }
+
+      const [entry] = parent.entries.splice(index, 1)
+      const [node] = parent.children.splice(index, 1)
+      right.entries = node.entries.concat(entry).concat(right.entries)
+      right.children = node.children.concat(right.children)
+      if (right.entries.length < this.degree) {
+        continue
+      }
+
+      const [en, rn] = right.split()
+      parent.entries.splice(index, 0, en)
+      parent.children.splice(index + 1, 0, rn)
+    }
+
     if (this.root.entries.length > 0) {
-      return deleted
+      return found
     }
 
     if (this.root.isLeaf()) {
-      return deleted
+      return found
     }
 
     this.root = this.root.children[0]
-    return deleted
+    return found
   }
 
   clear() {
