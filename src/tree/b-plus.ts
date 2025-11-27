@@ -139,13 +139,6 @@ export class BPlusTree<T, E extends Entry<T> = Entry<T>> {
 
     while (stack.length > 0) {
       const [index, parent] = stack.pop()!
-      if (!evicted) {
-        if (index > 0 && parent.children[index].leaf) {
-          parent.keys[index - 1] = parent.children[index].leaf.top()
-        }
-        continue
-      }
-
       const [key, node] = evicted
       parent.keys.splice(index, 0, key)
       parent.children.splice(index + 1, 0, node)
