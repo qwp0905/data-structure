@@ -208,21 +208,40 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
   constructor(private readonly degree: number = 3) {}
 
   insert(entry: E): E | undefined {
-    const [evicted, prev] = this.root.insert(entry, this.degree)
-    if (prev) {
-      return prev
+    let current = this.root as Node<T, E> | null
+    const stack: [number, Node<T, E>][] = []
+    while (current) {
+      const [index, found] = current.search(entry.key)
+      if (found) {
+        current.entries[index] = entry
+        return found
+      }
+
+      stack.push([index, current])
+      current = current.children[index]
     }
 
     this.len += 1
-    if (!evicted) {
-      return
+    let evicted: E | null = entry
+    while (stack.length > 0) {
+      const [index, parent] = stack.pop()!
+      if (evicted) {
+        parent.entries.splice(index, 0, evicted)
+      }
+      if (current) {
+        parent.children.splice(index + 1, 0, current)
+      }
+      if (parent.entries.length < this.degree) {
+        return
+      }
+      const [e, n] = parent.split()
+      evicted = e
+      current = n
     }
 
-    this.len += 1
-    const [en, right] = evicted
     const newRoot = new Node<T, E>()
-    newRoot.entries = [en]
-    newRoot.children = [this.root, right]
+    newRoot.entries = [evicted]
+    newRoot.children = [this.root, current!]
     this.root = newRoot
   }
 
