@@ -7,11 +7,18 @@ export class UnionFind {
   }
 
   find(x: number) {
-    if (this.parent[x] !== x) {
-      this.parent[x] = this.find(this.parent[x])
+    const stack: number[] = []
+    let current = x
+    while (current !== this.parent[current]) {
+      stack.push(current)
+      current = this.parent[current]
     }
 
-    return this.parent[x]
+    while (stack.length > 0) {
+      this.parent[stack.pop()!] = current
+    }
+
+    return current
   }
 
   union(x: number, y: number) {
