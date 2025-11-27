@@ -33,7 +33,7 @@ export class SortedList<T> {
     let low = 0
     let high = this.list.length
     while (low < high) {
-      const mid = low + Math.floor((high - low) / 2)
+      const mid = low + ((high - low) >>> 1)
       const cmp = this._compare(value, this.list[mid])
       if (cmp < 0) {
         high = mid
