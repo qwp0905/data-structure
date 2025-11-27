@@ -28,11 +28,11 @@ class Node<T, E extends Entry<T>> {
     yield* this.children.at(-1)!
   }
 
-  private search(k: T): [number, E | null] {
+  search(k: T): [number, E | null] {
     let left = 0
     let right = this.entries.length - 1
     while (left <= right) {
-      const mid = Math.floor((left + right) / 2)
+      const mid = (left + right) >>> 1
       const entry = this.entries[mid]
       if (k < entry.key) {
         right = mid - 1
@@ -46,8 +46,8 @@ class Node<T, E extends Entry<T>> {
     return [left, null]
   }
 
-  private split(): [E, Node<T, E>] {
-    const mid = Math.floor(this.entries.length / 2) + 1
+  split(): [E, Node<T, E>] {
+    const mid = (this.entries.length >>> 1) + 1
     const right = new Node<T, E>()
     right.entries = this.entries.splice(mid)
     right.children = this.children.splice(mid)
@@ -227,7 +227,14 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
   }
 
   get(k: T): E | undefined {
-    return this.root.get(k)
+    let node = this.root as Node<T, E> | null
+    while (!!node) {
+      const [index, entry] = node.search(k)
+      if (entry) {
+        return entry
+      }
+      node = node.children[index]
+    }
   }
 
   remove(k: T): E | undefined {
