@@ -179,15 +179,15 @@ class Node<T, E extends Entry<T>> {
 
   *range(s: T, e: T): IterableIterator<E> {
     const [index, found] = this.search(s)
-    if (found) {
-      yield found
-    }
-
     if (this.isLeaf()) {
       for (let i = index; i < this.entries.length && this.entries[i].key < e; i++) {
         yield this.entries[i]
       }
       return
+    }
+
+    if (found) {
+      yield found
     }
 
     for (let i = index; i < this.entries.length; i++) {
@@ -365,8 +365,8 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
     return false
   }
 
-  range(s: T, e: T) {
-    return this.root.range(s, e)
+  *range(s: T, e: T): IterableIterator<E> {
+    yield* this.root.range(s, e)
   }
 
   get length() {
