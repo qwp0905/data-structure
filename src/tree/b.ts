@@ -55,49 +55,6 @@ class Node<T, E extends Entry<T>> {
     return [entry, right]
   }
 
-  insert(entry: E, maxKeys: number): [[E, Node<T, E>] | null, E | null] {
-    const [index, found] = this.search(entry.key)
-    if (found) {
-      this.entries[index] = entry
-      return [null, found]
-    }
-
-    if (this.isLeaf()) {
-      this.entries.splice(index, 0, entry)
-      if (this.entries.length < maxKeys) {
-        return [null, null]
-      }
-
-      return [this.split(), null]
-    }
-
-    const [evicted, prev] = this.children[index].insert(entry, maxKeys)
-    if (!evicted) {
-      return [null, prev]
-    }
-
-    const [ee, el] = evicted
-    this.entries.splice(index, 0, ee)
-    this.children.splice(index + 1, 0, el)
-    if (this.entries.length < maxKeys) {
-      return [null, null]
-    }
-
-    return [this.split(), null]
-  }
-
-  get(k: T): E | undefined {
-    const [index, entry] = this.search(k)
-    if (entry) {
-      return entry
-    }
-    if (this.isLeaf()) {
-      return
-    }
-
-    return this.children[index].get(k)
-  }
-
   swapPredecessor(entry: E) {
     let node = this as Node<T, E>
     while (!node.isLeaf()) {
@@ -105,76 +62,6 @@ class Node<T, E extends Entry<T>> {
     }
 
     return node.entries.splice(-1, 1, entry)[0]
-  }
-
-  delete(k: T, minKeys: number, maxKeys: number): E | undefined {
-    const [index, found] = this.search(k)
-    if (this.isLeaf()) {
-      if (!found) {
-        return
-      }
-
-      this.entries.splice(index, 1)
-      return found
-    }
-
-    if (found) {
-      this.entries[index] = this.children[index].swapPredecessor(found)
-    }
-
-    const deleted = this.children[index].delete(k, minKeys, maxKeys)
-    if (!deleted) {
-      return
-    }
-
-    if (this.children[index].entries.length >= minKeys) {
-      return deleted
-    }
-
-    const isLeaf = this.children[index].isLeaf()
-    const left = this.children[index - 1]
-    const right = this.children[index + 1]
-    if (isLeaf && left?.entries.length > minKeys) {
-      const entry = this.entries[index - 1]
-      this.children[index].entries.unshift(entry)
-      this.entries[index - 1] = left.entries.pop()!
-      return deleted
-    }
-
-    if (isLeaf && right?.entries.length > minKeys) {
-      const entry = this.entries[index]
-      this.children[index].entries.push(entry)
-      this.entries[index] = right.entries.shift()!
-      return deleted
-    }
-
-    if (left) {
-      const [entry] = this.entries.splice(index - 1, 1)
-      const [node] = this.children.splice(index, 1)
-      left.entries.push(entry, ...node.entries)
-      left.children.push(...node.children)
-      if (left.entries.length < maxKeys) {
-        return deleted
-      }
-
-      const [en, rn] = left.split()
-      this.entries.splice(index - 1, 0, en)
-      this.children.splice(index, 0, rn)
-      return deleted
-    }
-
-    const [entry] = this.entries.splice(index, 1)
-    const [node] = this.children.splice(index, 1)
-    right.entries.unshift(...node.entries, entry)
-    right.children.unshift(...node.children)
-    if (right.entries.length < maxKeys) {
-      return deleted
-    }
-
-    const [en, rn] = right.split()
-    this.entries.splice(index, 0, en)
-    this.children.splice(index + 1, 0, rn)
-    return deleted
   }
 
   *range(s: T, e: T): IterableIterator<E> {
