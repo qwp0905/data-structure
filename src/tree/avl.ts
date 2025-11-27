@@ -206,22 +206,19 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
       return
     }
 
-    const stack: Node<T, E>[] = [this.root]
-    while (stack.length > 0) {
-      let current = stack.at(-1)!
-      if (current.left) {
-        stack.push(current.left)
-        continue
+    let current = this.root as Node<T, E> | null
+    const stack: Node<T, E>[] = []
+
+    while (current || stack.length > 0) {
+      while (current) {
+        stack.push(current)
+        current = current.left
       }
 
-      do {
-        current = stack.pop()!
-        yield current.entry
-      } while (!current.right && stack.length > 0)
+      current = stack.pop()!
+      yield current.entry
 
-      if (current.right) {
-        stack.push(current.right)
-      }
+      current = current.right
     }
   }
 
@@ -230,24 +227,23 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
       return
     }
 
-    const stack: [Node<T, E>, number, number][] = [[this.root, this.root.cmp(s), this.root.cmp(e)]]
-    while (stack.length > 0) {
-      let [current, scmp, ecmp] = stack.at(-1)!
-      if (current.left && scmp < 0) {
-        stack.push([current.left, current.left.cmp(s), current.left.cmp(e)])
-        continue
+    let current = this.root as Node<T, E> | null
+    const stack: Node<T, E>[] = []
+
+    while (current || stack.length > 0) {
+      while (current && current.cmp(s) <= 0) {
+        stack.push(current)
+        current = current.left
       }
 
-      do {
-        ;[current, scmp, ecmp] = stack.pop()!
-        if (scmp <= 0 && ecmp > 0) {
-          yield current.entry
-        }
-      } while ((!current.right || ecmp <= 0) && stack.length > 0)
-
-      if (current.right && ecmp > 0) {
-        stack.push([current.right, current.right.cmp(s), current.right.cmp(e)])
+      current ??= stack.pop()!
+      if (current.cmp(e) <= 0) {
+        return
       }
+      if (current.cmp(s) <= 0) {
+        yield current.entry
+      }
+      current = current.right
     }
   }
 
