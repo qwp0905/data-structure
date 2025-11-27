@@ -353,8 +353,16 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
     this.root = new Node<T, E>()
   }
 
-  has(k: T) {
-    return !!this.root.get(k)
+  has(k: T): boolean {
+    let node = this.root as Node<T, E> | null
+    while (node) {
+      const [index, entry] = node.search(k)
+      if (entry) {
+        return true
+      }
+      node = node.children[index]
+    }
+    return false
   }
 
   range(s: T, e: T) {
