@@ -22,7 +22,7 @@ export class RadixTree<T> {
       index += child.key.length
       current = child
     }
-    if (index !== key.length || current.value === null) {
+    if (index !== key.length || !key.endsWith(current.key) || current.value === null) {
       return
     }
 
@@ -48,7 +48,7 @@ export class RadixTree<T> {
         continue
       }
 
-      this.children.set(prefix, (current = child.split(match)))
+      current.children.set(prefix, (current = child.split(match)))
       remain = remain.slice(match.length)
     }
 
@@ -121,8 +121,8 @@ export class RadixTree<T> {
   }
 
   private split(key: string) {
-    const node = new RadixTree<T>(key, null, this)
     this.key = this.key.slice(key.length)
+    const node = new RadixTree<T>(key, null, this)
     return node
   }
 
