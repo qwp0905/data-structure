@@ -14,20 +14,6 @@ class Node<T, E extends Entry<T>> {
     return this.children.length === 0
   }
 
-  *[Symbol.iterator](): IterableIterator<E> {
-    if (this.isLeaf()) {
-      yield* this.entries
-      return
-    }
-
-    for (let i = 0; i < this.entries.length; i++) {
-      yield* this.children[i]
-      yield this.entries[i]
-    }
-
-    yield* this.children.at(-1)!
-  }
-
   search(k: T): [number, E | null] {
     let left = 0
     let right = this.entries.length - 1
@@ -62,29 +48,6 @@ class Node<T, E extends Entry<T>> {
     }
 
     return node.entries.splice(-1, 1, entry)[0]
-  }
-
-  *range(s: T, e: T): IterableIterator<E> {
-    const [index, found] = this.search(s)
-    if (this.isLeaf()) {
-      for (let i = index; i < this.entries.length && this.entries[i].key < e; i++) {
-        yield this.entries[i]
-      }
-      return
-    }
-
-    if (found) {
-      yield found
-    }
-
-    for (let i = index; i < this.entries.length; i++) {
-      yield* this.children[i].range(s, e)
-      if (this.entries[i].key >= e) {
-        return
-      }
-      yield this.entries[i]
-    }
-    yield* this.children.at(-1)!.range(s, e)
   }
 }
 
@@ -121,9 +84,7 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
       if (parent.entries.length < this.degree) {
         return
       }
-      const [e, n] = parent.split()
-      evicted = e
-      current = n
+      ;[evicted, current] = parent.split()
     }
 
     const newRoot = new Node<T, E>()
