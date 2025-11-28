@@ -84,6 +84,29 @@ function test() {
       }
     }
   })
+
+  it("should iterate", () => {
+    tree.insert(new DefaultEntry(1))
+    tree.insert(new DefaultEntry(2))
+    tree.insert(new DefaultEntry(3))
+    tree.insert(new DefaultEntry(4))
+    tree.insert(new DefaultEntry(5))
+    tree.insert(new DefaultEntry(6))
+    tree.insert(new DefaultEntry(7))
+    tree.insert(new DefaultEntry(8))
+    tree.insert(new DefaultEntry(9))
+    tree.insert(new DefaultEntry(10))
+    const result = [...tree.entries()]
+    expect(result.map((e) => e.key)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  })
+
+  it("should range", () => {
+    for (let i = 1; i <= 1000; i += 1) {
+      tree.insert(new DefaultEntry(i))
+    }
+
+    expect(Array.from(tree.range(21, 24)).map((e) => e.key)).toEqual([21, 22, 23])
+  })
 }
 
 describe("BTree", () => {

@@ -253,14 +253,58 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
   }
 
   *range(s: T, e: T): IterableIterator<E> {
-    yield* this.root.range(s, e)
+    let current: Node<T, E> | null = this.root
+    let index: number | null = null
+    const stack: [number, Node<T, E>][] = []
+
+    while (current || stack.length > 0) {
+      while (current) {
+        index ??= current.search(s)[0]
+        stack.push([index, current])
+        current = current.children[index]
+        index = null
+      }
+
+      ;[index, current] = stack.pop()!
+      if (current.entries.length <= index) {
+        current = null
+        index = null
+        continue
+      }
+      if (current.entries[index].key >= e) {
+        return
+      }
+      yield current.entries[index]
+      index += 1
+    }
   }
 
   get length() {
     return this.len
   }
 
-  *[Symbol.iterator](): IterableIterator<E> {
-    yield* this.root
+  *entries(): IterableIterator<E> {
+    let index = 0
+    let current = this.root as Node<T, E> | null
+    const stack: [number, Node<T, E>][] = []
+
+    while (current || stack.length > 0) {
+      while (current) {
+        stack.push([index, current])
+        current = current.children[index]
+        index = 0
+      }
+
+      ;[index, current] = stack.pop()!
+      if (current.entries.length <= index) {
+        current = null
+        index = 0
+        continue
+      }
+      yield current.entries[index]
+      index += 1
+    }
   }
+
+  [Symbol.iterator] = this.entries
 }
