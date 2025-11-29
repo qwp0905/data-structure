@@ -16,12 +16,11 @@ export class Bitmap {
     if (i >= this.bits.length) {
       return false
     }
-    const moved = this.bits[i] | (1 << b)
-    if (moved === this.bits[i]) {
+    const prev = this.bits[i]
+    if (prev === (this.bits[i] |= 1 << b)) {
       return false
     }
     this._size += 1
-    this.bits[i] = moved
     return true
   }
 
@@ -40,12 +39,11 @@ export class Bitmap {
     if (i >= this.bits.length) {
       return false
     }
-    const moved = this.bits[i] & ~(1 << b)
-    if (moved === this.bits[i]) {
+    const prev = this.bits[i]
+    if (prev === (this.bits[i] &= ~(1 << b))) {
       return false
     }
     this._size -= 1
-    this.bits[i] = moved
     return true
   }
 
