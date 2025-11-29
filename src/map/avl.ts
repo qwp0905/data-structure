@@ -7,7 +7,7 @@ class MapEntry<K, V> {
   ) {}
 }
 
-export class AVLMap<K, V> implements Map<K, V> {
+export class AVLTreeMap<K, V> implements Map<K, V> {
   private inner = new AVLTree<K, MapEntry<K, V>>()
 
   constructor(iterable?: Iterable<[K, V]>) {
