@@ -1,5 +1,6 @@
 const SHIFT = 5
-const MASK = (1 << SHIFT) - 1
+const MAX_BIT = 1 << SHIFT
+const MASK = MAX_BIT - 1
 
 export class Bitmap {
   private readonly bits: Uint32Array
@@ -56,7 +57,7 @@ export class Bitmap {
     for (let i = 0; i < this.bits.length; i += 1) {
       const shift = i << SHIFT
 
-      for (let b = this.bits[i], j = 0; b > 0 && j <= MASK; j += 1, b >>>= 1) {
+      for (let b = this.bits[i], j = 0; b > 0 && j < MAX_BIT; j += 1, b >>>= 1) {
         if (b & 1) {
           yield shift + j
         }
