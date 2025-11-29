@@ -73,7 +73,7 @@ export class RadixTree<T> {
       index += child.key.length
     }
 
-    if (index !== key.length || current.value === null) {
+    if (index !== key.length || !key.endsWith(current.key) || current.value === null) {
       return
     }
 
@@ -85,7 +85,7 @@ export class RadixTree<T> {
 
     while (stack.length > 0) {
       const [prefix, parent] = stack.pop()!
-      if (current.children.size > 0) {
+      if (current.children.size > 0 || current.value !== null) {
         return deleted
       }
       parent.children.delete(prefix)
