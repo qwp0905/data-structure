@@ -10,7 +10,7 @@ export class Bitmap {
     this.bits = new Uint32Array((capacity + MASK) >>> SHIFT)
   }
 
-  set(bit: number) {
+  add(bit: number) {
     const i = bit >>> SHIFT
     const b = bit & MASK
     if (i >= this.bits.length) {

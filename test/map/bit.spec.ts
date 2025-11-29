@@ -21,35 +21,35 @@ describe("Bitmap", () => {
     })
 
     it("should set a bit and return true", () => {
-      const result = bitmap.set(5)
+      const result = bitmap.add(5)
       expect(result).toBe(true)
       expect(bitmap.has(5)).toBe(true)
       expect(bitmap.size).toBe(1)
     })
 
     it("should set multiple bits", () => {
-      expect(bitmap.set(0)).toBe(true)
-      expect(bitmap.set(31)).toBe(true)
-      expect(bitmap.set(63)).toBe(true)
+      expect(bitmap.add(0)).toBe(true)
+      expect(bitmap.add(31)).toBe(true)
+      expect(bitmap.add(63)).toBe(true)
       expect(bitmap.size).toBe(3)
     })
 
     it("should return false when setting the same bit twice", () => {
-      expect(bitmap.set(10)).toBe(true)
-      expect(bitmap.set(10)).toBe(false)
+      expect(bitmap.add(10)).toBe(true)
+      expect(bitmap.add(10)).toBe(false)
       expect(bitmap.size).toBe(1)
     })
 
     it("should return false when bit is out of range", () => {
-      const result = bitmap.set(64)
+      const result = bitmap.add(64)
       expect(result).toBe(false)
       expect(bitmap.size).toBe(0)
     })
 
     it("should handle bits at word boundaries", () => {
       // Test bits at 32-bit word boundaries
-      expect(bitmap.set(31)).toBe(true)
-      expect(bitmap.set(32)).toBe(true)
+      expect(bitmap.add(31)).toBe(true)
+      expect(bitmap.add(32)).toBe(true)
       expect(bitmap.size).toBe(2)
     })
   })
@@ -62,7 +62,7 @@ describe("Bitmap", () => {
     })
 
     it("should return true for set bits", () => {
-      bitmap.set(15)
+      bitmap.add(15)
       expect(bitmap.has(15)).toBe(true)
     })
 
@@ -76,8 +76,8 @@ describe("Bitmap", () => {
     })
 
     it("should work with bits at word boundaries", () => {
-      bitmap.set(31)
-      bitmap.set(32)
+      bitmap.add(31)
+      bitmap.add(32)
       expect(bitmap.has(31)).toBe(true)
       expect(bitmap.has(32)).toBe(true)
       expect(bitmap.has(30)).toBe(false)
@@ -93,7 +93,7 @@ describe("Bitmap", () => {
     })
 
     it("should delete a set bit and return true", () => {
-      bitmap.set(20)
+      bitmap.add(20)
       expect(bitmap.size).toBe(1)
 
       const result = bitmap.del(20)
@@ -115,9 +115,9 @@ describe("Bitmap", () => {
     })
 
     it("should delete multiple bits correctly", () => {
-      bitmap.set(10)
-      bitmap.set(20)
-      bitmap.set(30)
+      bitmap.add(10)
+      bitmap.add(20)
+      bitmap.add(30)
       expect(bitmap.size).toBe(3)
 
       expect(bitmap.del(20)).toBe(true)
@@ -128,8 +128,8 @@ describe("Bitmap", () => {
     })
 
     it("should handle bits at word boundaries", () => {
-      bitmap.set(31)
-      bitmap.set(32)
+      bitmap.add(31)
+      bitmap.add(32)
       expect(bitmap.size).toBe(2)
 
       expect(bitmap.del(31)).toBe(true)
@@ -151,28 +151,28 @@ describe("Bitmap", () => {
     })
 
     it("should increment size when setting new bits", () => {
-      bitmap.set(1)
+      bitmap.add(1)
       expect(bitmap.size).toBe(1)
 
-      bitmap.set(2)
+      bitmap.add(2)
       expect(bitmap.size).toBe(2)
 
-      bitmap.set(3)
+      bitmap.add(3)
       expect(bitmap.size).toBe(3)
     })
 
     it("should not change size when setting same bit twice", () => {
-      bitmap.set(5)
+      bitmap.add(5)
       expect(bitmap.size).toBe(1)
 
-      bitmap.set(5)
+      bitmap.add(5)
       expect(bitmap.size).toBe(1)
     })
 
     it("should decrement size when deleting bits", () => {
-      bitmap.set(10)
-      bitmap.set(20)
-      bitmap.set(30)
+      bitmap.add(10)
+      bitmap.add(20)
+      bitmap.add(30)
       expect(bitmap.size).toBe(3)
 
       bitmap.del(20)
@@ -186,7 +186,7 @@ describe("Bitmap", () => {
     })
 
     it("should not change size when deleting unset bits", () => {
-      bitmap.set(15)
+      bitmap.add(15)
       expect(bitmap.size).toBe(1)
 
       bitmap.del(16) // 설정되지 않은 비트
@@ -194,12 +194,42 @@ describe("Bitmap", () => {
     })
   })
 
+  describe("values", () => {
+    let bitmap: Bitmap
+
+    beforeEach(() => {
+      bitmap = new Bitmap(128)
+    })
+
+    it("should return all set bits", () => {
+      bitmap.add(10)
+      bitmap.add(20)
+      bitmap.add(30)
+      bitmap.add(40)
+      bitmap.add(50)
+      bitmap.add(60)
+      bitmap.add(70)
+      bitmap.add(80)
+      bitmap.add(90)
+      bitmap.add(100)
+      bitmap.add(110)
+      bitmap.add(120)
+      expect(Array.from(bitmap.values())).toEqual([
+        10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120
+      ])
+    })
+
+    it("should return empty array when no bits are set", () => {
+      expect(Array.from(bitmap.values())).toEqual([])
+    })
+  })
+
   describe("edge cases", () => {
     it("should work with small capacity", () => {
       const bitmap = new Bitmap(1)
-      expect(bitmap.set(0)).toBe(true)
-      expect(bitmap.set(31)).toBe(true) // 32비트 워드 내에서 유효
-      expect(bitmap.set(32)).toBe(false) // out of range
+      expect(bitmap.add(0)).toBe(true)
+      expect(bitmap.add(31)).toBe(true) // 32비트 워드 내에서 유효
+      expect(bitmap.add(32)).toBe(false) // out of range
       expect(bitmap.has(0)).toBe(true)
       expect(bitmap.has(31)).toBe(true)
       expect(bitmap.size).toBe(2)
@@ -207,7 +237,7 @@ describe("Bitmap", () => {
 
     it("should work with zero bit index", () => {
       const bitmap = new Bitmap(32)
-      expect(bitmap.set(0)).toBe(true)
+      expect(bitmap.add(0)).toBe(true)
       expect(bitmap.has(0)).toBe(true)
       expect(bitmap.del(0)).toBe(true)
       expect(bitmap.has(0)).toBe(false)
@@ -218,7 +248,7 @@ describe("Bitmap", () => {
 
       // Set some bits
       for (let i = 0; i < 10; i++) {
-        bitmap.set(i * 10)
+        bitmap.add(i * 10)
       }
       expect(bitmap.size).toBe(10)
 
