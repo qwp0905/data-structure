@@ -49,6 +49,7 @@ export class BPlusTreeMap<K, V> implements Map<K, V> {
       yield [entry.key, entry.value]
     }
   }
+  [Symbol.iterator] = this.entries;
 
   *keys(): IterableIterator<K> {
     for (const entry of this.tree.entries()) {
@@ -60,10 +61,6 @@ export class BPlusTreeMap<K, V> implements Map<K, V> {
     for (const entry of this.tree.entries()) {
       yield entry.value
     }
-  }
-
-  [Symbol.iterator]() {
-    return this.entries()
   }
 
   [Symbol.toStringTag] = this.constructor.name
