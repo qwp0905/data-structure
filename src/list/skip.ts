@@ -1,5 +1,3 @@
-import { LinkedList } from "./linked"
-
 interface Entry<T> {
   readonly key: T
 }
@@ -105,11 +103,10 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
   }
 
   insert(entry: E): E | undefined {
-    const buffered = new LinkedList<SkipNode<T, E>>()
+    const buffered: SkipNode<T, E>[] = []
     let node: SkipNode<T, E> = this.head
     while (!!node.getBottom()) {
       if (node.getKey() === entry.key) {
-        buffered.clear()
         return node.swapEntry(entry)
       }
       const next = node.getNext()!
@@ -118,7 +115,7 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
         continue
       }
 
-      buffered.pushBack(node)
+      buffered.push(node)
       node = node.getBottom()!
     }
 
@@ -127,17 +124,13 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     }
 
     if (node.getKey() === entry.key) {
-      buffered.clear()
       return node.swapEntry(entry)
     }
 
-    buffered.pushBack(node)
+    buffered.push(node)
     this.len += 1
 
     const height = this.randomHeight()
-    while (buffered.length > height) {
-      buffered.popFront()
-    }
 
     if (height === this._height) {
       const newHead = new SkipNode<T, E>()
@@ -151,14 +144,16 @@ export class SkipList<T, E extends Entry<T> = Entry<T>> {
     }
 
     let bottom: SkipNode<T, E> | null = null
-    while (buffered.length > 0) {
-      const prev = buffered.popBack()!
+    let h = 0
+    while (buffered.length > 0 && h < height) {
+      const prev = buffered.pop()!
       const next = prev.getNext()!
       const newNode = new SkipNode<T, E>(entry)
       newNode.setNext(next)
       prev.setNext(newNode)
       newNode.setBottom(bottom)
       bottom = newNode
+      h += 1
     }
   }
 
