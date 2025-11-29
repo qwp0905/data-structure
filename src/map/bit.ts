@@ -54,11 +54,12 @@ export class Bitmap {
   *values() {
     for (let i = 0; i < this.bits.length; i += 1) {
       const shift = i << SHIFT
+      let b = this.bits[i]
 
-      for (let b = this.bits[i], j = 0; b > 0 && j < MAX_BIT; j += 1, b >>>= 1) {
-        if (b & 1) {
-          yield shift + j
-        }
+      while (b > 0) {
+        const j = b & -b
+        yield shift + MASK - Math.clz32(j)
+        b &= ~j
       }
     }
   }
