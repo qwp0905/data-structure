@@ -59,7 +59,7 @@ export class Bitmap {
       while (b > 0) {
         const j = b & -b
         yield shift + MASK - Math.clz32(j)
-        b &= ~j
+        b = (b ^ j) >>> 0
       }
     }
   }

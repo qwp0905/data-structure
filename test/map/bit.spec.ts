@@ -214,8 +214,9 @@ describe("Bitmap", () => {
       bitmap.add(100)
       bitmap.add(110)
       bitmap.add(120)
+      bitmap.add(127)
       expect(Array.from(bitmap.values())).toEqual([
-        10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120
+        10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 127
       ])
     })
 
