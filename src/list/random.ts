@@ -1,19 +1,16 @@
 export class RandomArray<T> extends Array<T> {
-  *sample(count: number): IterableIterator<T> {
-    const result: T[] = []
-    for (let i = 0; i < this.length; i++) {
-      if (result.length < count) {
-        result.push(this.at(i)!)
-        continue
-      }
-      const randomIndex = Math.floor(Math.random() * (i + 1))
+  sample(count: number): T[] {
+    const result = this.slice(0, count)
+    for (let i = count; i < this.length; i += 1) {
+      const randomIndex = (Math.random() * (i + 1)) >>> 0
+
       if (randomIndex >= count) {
         continue
       }
 
       result[randomIndex] = this.at(i)!
     }
-    yield* result
+    return result
   }
 
   pick() {
