@@ -114,7 +114,9 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
       }
     }
 
+    this.len += 1
     current = new Node(entry)
+
     while (stack.length > 0) {
       const [parent, direction] = stack.pop()!
       const key = direction === Direction.left ? "left" : "right"
@@ -123,7 +125,6 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     }
 
     this.root = current
-    this.len += 1
   }
 
   get(k: T): E | undefined {
@@ -181,6 +182,7 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
       return
     }
 
+    this.len -= 1
     const deleted = current.entry
     current = null
 
@@ -192,7 +194,6 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     }
 
     this.root = current
-    this.len -= 1
     return deleted
   }
 
