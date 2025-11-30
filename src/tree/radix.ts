@@ -14,7 +14,7 @@ export class RadixTree<T> {
     let current = this as RadixTree<T>
     let remain = key
     while (remain !== EMPTY) {
-      const prefix = remain.at(0)!
+      const prefix = remain[0]
       const child = current.children.get(prefix)
       if (!child) {
         return
@@ -34,7 +34,7 @@ export class RadixTree<T> {
     let current = this as RadixTree<T>
     let remain = key
     while (remain !== EMPTY) {
-      const prefix = remain.at(0)!
+      const prefix = remain[0]
       const child = current.children.get(prefix)
       if (!child) {
         current.children.set(prefix, (current = new RadixTree<T>(remain)))
@@ -64,7 +64,7 @@ export class RadixTree<T> {
     const stack: [string, RadixTree<T>][] = []
 
     while (remain !== EMPTY) {
-      const prefix = remain.at(0)!
+      const prefix = remain[0]
       const child = current.children.get(prefix)
       if (!child) {
         return
