@@ -7,7 +7,7 @@ export class RadixTree<T> {
     private value: T | null = null,
     ...children: RadixTree<T>[]
   ) {
-    this.children = new Map(children.map((c) => [c.key.at(0)!, c]))
+    this.children = new Map(children.map((c) => [c.key[0], c]))
   }
 
   get(key: string): T | undefined {
