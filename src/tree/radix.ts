@@ -12,21 +12,22 @@ export class RadixTree<T> {
 
   get(key: string): T | undefined {
     let current = this as RadixTree<T>
-    let index = 0
-    while (index < key.length) {
-      const child = current.children.get(key[index])
+    let remain = key
+    while (remain !== EMPTY) {
+      const prefix = remain.at(0)!
+      const child = current.children.get(prefix)
       if (!child) {
         return
       }
+      if (!remain.startsWith(child.key)) {
+        return
+      }
 
-      index += child.key.length
+      remain = remain.slice(child.key.length)
       current = child
     }
-    if (index !== key.length || !key.endsWith(current.key) || current.value === null) {
-      return
-    }
 
-    return current.value
+    return current.value ?? undefined
   }
 
   insert(key: string, value: T): T | undefined {
@@ -59,21 +60,21 @@ export class RadixTree<T> {
 
   remove(key: string): T | undefined {
     let current = this as RadixTree<T>
-    let index = 0
+    let remain = key
     const stack: [string, RadixTree<T>][] = []
 
-    while (index < key.length) {
-      const prefix = key[index]
+    while (remain !== EMPTY) {
+      const prefix = remain.at(0)!
       const child = current.children.get(prefix)
       if (!child) {
         return
       }
       stack.push([prefix, current])
       current = child
-      index += child.key.length
+      remain = remain.slice(child.key.length)
     }
 
-    if (index !== key.length || !key.endsWith(current.key) || current.value === null) {
+    if (current.value === null) {
       return
     }
 

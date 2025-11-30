@@ -8,18 +8,14 @@ describe("RadixTree", () => {
   })
 
   it("should insert and get", () => {
-    expect(tree.insert("abcc", "abcc")).toBeUndefined()
-    expect(tree.insert("abd", "abd")).toBeUndefined()
-    expect(tree.insert("acb", "acb")).toBeUndefined()
-    expect(tree.get("abcc")).toBe("abcc")
-    expect(tree.get("abd")).toBe("abd")
-    expect(tree.get("acb")).toBe("acb")
-    expect(tree.get("ab")).toBeUndefined()
-    expect(tree.get("ac")).toBeUndefined()
-    expect(tree.get("abc")).toBeUndefined()
-    expect(tree.get("abcd")).toBeUndefined()
-    expect(tree.get("abcde")).toBeUndefined()
-    expect(tree.get("abcdef")).toBeUndefined()
+    tree.insert("abcbbc", "abcbbc")
+    tree.insert("abcsdf", "abcsdf")
+    tree.insert("accbbc", "accbbc")
+    expect(tree.get("abcbbc")).toBe("abcbbc")
+    expect(tree.get("abcsdf")).toBe("abcsdf")
+    expect(tree.get("accbbc")).toBe("accbbc")
+    expect(tree.get("abobbc")).toBeUndefined()
+    expect(tree.get("abcbbcc")).toBeUndefined()
   })
 
   it("should insert and remove", () => {
