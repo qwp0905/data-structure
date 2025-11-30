@@ -144,7 +144,7 @@ export class BTree<T, E extends Entry<T> = Entry<T>> {
 
       if (isLeaf && left?.entries.length > minKeys) {
         const entry = parent.entries[index - 1]
-        parent.children[index].entries.unshift(entry)
+        parent.children[index].entries = [entry].concat(parent.children[index].entries)
         parent.entries[index - 1] = left.entries.pop()!
         continue
       }
