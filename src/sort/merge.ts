@@ -1,10 +1,11 @@
 export class MergeSortArray<T> extends Array<T> {
   sort(compareFn: (a: T, b: T) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)): this {
+    const len = this.length
     const temp: T[] = []
-    for (let i = 1; i < this.length; i <<= 1) {
-      for (let left = 0; left + i < this.length; left += i << 1) {
+    for (let i = 1; i < len; i <<= 1) {
+      for (let left = 0; left + i < len; left += i << 1) {
         const right = left + i
-        const end = Math.min(right + i, this.length)
+        const end = Math.min(right + i, len)
         let begin = left
         let count = left
         let center = right
