@@ -203,10 +203,6 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
   }
 
   *entries() {
-    if (!this.root) {
-      return
-    }
-
     let current = this.root as Node<T, E> | null
     const stack: Node<T, E>[] = []
 
@@ -224,10 +220,6 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
   }
 
   *range(s: T, e: T) {
-    if (!this.root) {
-      return
-    }
-
     let current = this.root as Node<T, E> | null
     const stack: Node<T, E>[] = []
 
