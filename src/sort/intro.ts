@@ -101,10 +101,3 @@ export class IntroSortArray<T> extends Array<T> {
     return this
   }
 }
-
-const c = 1_000_00
-const a = IntroSortArray.from({ length: c }, (_, i) => i)
-// const a = Array.from({ length: c }, (_, i) => i)
-console.time("sort")
-a.sort()
-console.timeEnd("sort")
