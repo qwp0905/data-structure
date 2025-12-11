@@ -13,7 +13,14 @@ export class Queue<T> {
     return queue
   }
 
-  push = this.data.push.bind(this.data)
+  push(value: T) {
+    const len = this.data.length
+    if (len === this.head) {
+      this.data.length = 0
+      this.head = 0
+    }
+    return this.data.push(value) - this.head
+  }
 
   pop() {
     const len = this.data.length
