@@ -63,7 +63,8 @@ export class IntroSortArray<T> extends Array<T> {
       }
     } while (low < high)
 
-    this.swap(leftEnd, high)
+    this[leftEnd] = this[high]
+    this[high] = pivot
     return high
   }
 
