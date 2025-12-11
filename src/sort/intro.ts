@@ -6,15 +6,14 @@ export class IntroSortArray<T> extends Array<T> {
   }
 
   private heapSort(leftEnd: number, rightEnd: number, compareFn: (a: T, b: T) => number) {
-    const len = rightEnd - leftEnd
-    const half = len >>> 1
-    for (let i = half + leftEnd; i >= leftEnd; i -= 1) {
+    const mid = leftEnd + ((rightEnd - leftEnd) >>> 1)
+    for (let i = mid - 1; i >= leftEnd; i -= 1) {
       let cur = i
       let left: number
       while (((left = (cur << 1) + 1), left < rightEnd)) {
         const right = left + 1
         let max = left
-        if (right <= rightEnd && compareFn(this[right], this[left]) > 0) {
+        if (right < rightEnd && compareFn(this[right], this[left]) > 0) {
           max = right
         }
         if (compareFn(this[cur], this[max]) >= 0) {
@@ -29,10 +28,10 @@ export class IntroSortArray<T> extends Array<T> {
       this.swap(leftEnd, i)
       let cur = leftEnd
       let left: number
-      while (((left = (cur << 1) + 1), left <= i)) {
+      while (((left = (cur << 1) + 1), left < i)) {
         const right = left + 1
         let max = left
-        if (right <= i && compareFn(this[right], this[left]) > 0) {
+        if (right < i && compareFn(this[right], this[left]) > 0) {
           max = right
         }
         if (compareFn(this[cur], this[max]) >= 0) {
@@ -68,11 +67,12 @@ export class IntroSortArray<T> extends Array<T> {
     return high
   }
 
-  private insertionSort(leftEnd: number, rightEnd: number, compareFn: (a: T, b: T) => number) {
-    for (let i = leftEnd + 1; i < rightEnd; i += 1) {
+  private insertionSort(compareFn: (a: T, b: T) => number) {
+    const len = this.length
+    for (let i = 1; i < len; i += 1) {
       const value = this[i]
 
-      let low = leftEnd
+      let low = 0
       let high = i
       while (low < high) {
         const mid = low + ((high - low) >>> 1)
@@ -109,7 +109,7 @@ export class IntroSortArray<T> extends Array<T> {
       stack.push([high + 1, rightEnd, depth - 1])
     }
 
-    this.insertionSort(0, len, compareFn)
+    this.insertionSort(compareFn)
     return this
   }
 }
