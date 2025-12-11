@@ -71,11 +71,24 @@ export class IntroSortArray<T> extends Array<T> {
   private insertionSort(leftEnd: number, rightEnd: number, compareFn: (a: T, b: T) => number) {
     for (let i = leftEnd + 1; i < rightEnd; i += 1) {
       const value = this[i]
-      let j = i - 1
-      for (j = i - 1; j >= leftEnd && compareFn(this[j], value) > 0; j -= 1) {
+
+      let low = leftEnd
+      let high = i
+      while (low < high) {
+        const mid = low + ((high - low) >>> 1)
+        const cmp = compareFn(this[mid], value)
+        if (cmp < 0) {
+          low = mid + 1
+        } else {
+          high = mid
+        }
+      }
+
+      for (let j = i - 1; j >= low; j -= 1) {
         this[j + 1] = this[j]
       }
-      this[j + 1] = value
+
+      this[low] = value
     }
   }
 
@@ -98,7 +111,7 @@ export class IntroSortArray<T> extends Array<T> {
       stack.push([high + 1, rightEnd, depth - 1])
     }
 
-    this.insertionSort(0, len - 1, compareFn)
+    this.insertionSort(0, len, compareFn)
     return this
   }
 }
