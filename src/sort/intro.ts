@@ -6,12 +6,12 @@ export class IntroSortArray<T> extends Array<T> {
   }
 
   private heapSort(leftEnd: number, rightEnd: number, compareFn: (a: T, b: T) => number) {
-    const len = rightEnd - leftEnd + 1
+    const len = rightEnd - leftEnd
     const half = len >>> 1
     for (let i = half + leftEnd; i >= leftEnd; i -= 1) {
       let cur = i
       let left: number
-      while (((left = (cur << 1) + 1), left <= rightEnd)) {
+      while (((left = (cur << 1) + 1), left < rightEnd)) {
         const right = left + 1
         let max = left
         if (right <= rightEnd && compareFn(this[right], this[left]) > 0) {
@@ -25,7 +25,7 @@ export class IntroSortArray<T> extends Array<T> {
       }
     }
 
-    for (let i = rightEnd; i > leftEnd; i -= 1) {
+    for (let i = rightEnd - 1; i > leftEnd; i -= 1) {
       this.swap(leftEnd, i)
       let cur = leftEnd
       let left: number
@@ -47,7 +47,7 @@ export class IntroSortArray<T> extends Array<T> {
   private quickSort(leftEnd: number, rightEnd: number, compareFn: (a: T, b: T) => number) {
     const pivot = this[leftEnd]
     let low = leftEnd
-    let high = rightEnd + 1
+    let high = rightEnd
 
     do {
       do {
@@ -68,7 +68,7 @@ export class IntroSortArray<T> extends Array<T> {
   }
 
   private insertionSort(leftEnd: number, rightEnd: number, compareFn: (a: T, b: T) => number) {
-    for (let i = leftEnd + 1; i <= rightEnd; i += 1) {
+    for (let i = leftEnd + 1; i < rightEnd; i += 1) {
       const value = this[i]
       let j = i - 1
       for (j = i - 1; j >= leftEnd && compareFn(this[j], value) > 0; j -= 1) {
@@ -80,7 +80,7 @@ export class IntroSortArray<T> extends Array<T> {
 
   sort(compareFn: (a: T, b: T) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)): this {
     const len = this.length
-    const stack = len > 16 ? [[0, len - 1, Math.ceil(Math.log2(len))]] : []
+    const stack: [number, number, number][] = [[0, len, Math.ceil(Math.log2(len))]]
 
     while (stack.length > 0) {
       const [leftEnd, rightEnd, depth] = stack.pop()!
