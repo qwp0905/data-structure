@@ -83,7 +83,9 @@ export class IntroSortArray<T> extends Array<T> {
         }
       }
 
-      this.copyWithin(low + 1, low, i)
+      for (let j = i; j > low; j -= 1) {
+        this[j] = this[j - 1]
+      }
       this[low] = value
     }
   }
