@@ -3,30 +3,27 @@ export class MergeSortArray<T> extends Array<T> {
     const len = this.length
     const temp: T[] = []
     for (let i = 1; i < len; i <<= 1) {
-      for (let left = 0; left + i < len; left += i << 1) {
-        const right = left + i
-        const end = Math.min(right + i, len)
-        let begin = left
-        let count = left
-        let center = right
-
-        while (begin < right && center < end) {
-          if (compareFn(this[begin], this[center]) < 0) {
-            temp[count++] = this[begin++]
+      let right: number
+      let mid: number
+      for (let left = 0; (mid = left + i) < (right = Math.min(mid + i, len)); left = right) {
+        let j = left
+        let k = mid
+        let count = 0
+        while (j < mid && k < right) {
+          if (compareFn(this[j], this[k]) < 0) {
+            temp[count++] = this[j++]
           } else {
-            temp[count++] = this[center++]
+            temp[count++] = this[k++]
           }
         }
-
-        while (begin < right) {
-          temp[count++] = this[begin++]
+        while (j < mid) {
+          temp[count++] = this[j++]
         }
-        while (center < end) {
-          temp[count++] = this[center++]
+        while (k < right) {
+          temp[count++] = this[k++]
         }
-
-        for (let k = left; k < end; k += 1) {
-          this[k] = temp[k]
+        for (let l = 0; l < count; l += 1) {
+          this[l + left] = temp[l]
         }
       }
     }
