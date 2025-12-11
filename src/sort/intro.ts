@@ -105,7 +105,7 @@ export class IntroSortArray<T> extends Array<T> {
       }
 
       const high = this.quickSort(leftEnd, rightEnd, compareFn)
-      stack.push([leftEnd, high - 1, depth - 1])
+      stack.push([leftEnd, high, depth - 1])
       stack.push([high + 1, rightEnd, depth - 1])
     }
 
