@@ -2,8 +2,8 @@ export class Queue<T> {
   private readonly data: T[] = []
   private head = 0
 
-  static from<T>(iterable: Iterable<T>) {
-    const queue = new Queue()
+  static from<T>(iterable: Iterable<T>): Queue<T> {
+    const queue = new Queue<T>()
     for (const v of iterable) {
       queue.push(v)
     }
