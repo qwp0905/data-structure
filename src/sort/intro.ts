@@ -76,18 +76,14 @@ export class IntroSortArray<T> extends Array<T> {
       let high = i
       while (low < high) {
         const mid = low + ((high - low) >>> 1)
-        const cmp = compareFn(this[mid], value)
-        if (cmp < 0) {
+        if (compareFn(this[mid], value) < 0) {
           low = mid + 1
         } else {
           high = mid
         }
       }
 
-      for (let j = i - 1; j >= low; j -= 1) {
-        this[j + 1] = this[j]
-      }
-
+      this.copyWithin(low + 1, low, i)
       this[low] = value
     }
   }
