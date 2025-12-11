@@ -12,28 +12,7 @@ export class TimSortArray<T> extends Array<T> {
       let right: number
       let mid: number
       for (let left = 0; (mid = left + size) < (right = Math.min(mid + size, len)); left = right) {
-        let i = left
-        let j = mid
-        let k = 0
-
-        while (i < mid && j < right) {
-          if (compareFn(this[i], this[j]) < 0) {
-            tmp[k++] = this[i++]
-          } else {
-            tmp[k++] = this[j++]
-          }
-        }
-
-        while (i < mid) {
-          tmp[k++] = this[i++]
-        }
-        while (j < right) {
-          tmp[k++] = this[j++]
-        }
-
-        for (let l = 0; l < k; l += 1) {
-          this[left + l] = tmp[l]
-        }
+        this.merge(left, mid, right, compareFn, tmp)
       }
     }
     return this
@@ -56,6 +35,37 @@ export class TimSortArray<T> extends Array<T> {
 
       this.copyWithin(low + 1, low, i)
       this[low] = value
+    }
+  }
+
+  private merge(
+    left: number,
+    mid: number,
+    right: number,
+    compareFn: (a: T, b: T) => number,
+    tmp: T[]
+  ) {
+    let i = left
+    let j = mid
+    let k = 0
+
+    while (i < mid && j < right) {
+      if (compareFn(this[i], this[j]) < 0) {
+        tmp[k++] = this[i++]
+      } else {
+        tmp[k++] = this[j++]
+      }
+    }
+
+    while (i < mid) {
+      tmp[k++] = this[i++]
+    }
+    while (j < right) {
+      tmp[k++] = this[j++]
+    }
+
+    for (let l = 0; l < k; l += 1) {
+      this[left + l] = tmp[l]
     }
   }
 }
