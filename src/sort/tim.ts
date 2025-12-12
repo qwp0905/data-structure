@@ -19,9 +19,7 @@ export class TimSortArray<T> extends Array<T> {
   }
 
   private insertionSort(leftEnd: number, rightEnd: number, compareFn: (a: T, b: T) => number) {
-    for (let i = leftEnd + 1; i < rightEnd; i += 1) {
-      const value = this[i]
-
+    for (let i = leftEnd + 1, value = this[i]; i < rightEnd; value = this[++i]) {
       let low = leftEnd
       let high = i
       while (low < high) {
