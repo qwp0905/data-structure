@@ -1,11 +1,6 @@
 export class IntroSortArray<T> extends Array<T> {
-  private swap(i: number, j: number) {
-    const temp = this[i]
-    this[i] = this[j]
-    this[j] = temp
-  }
-
   private heapSort(leftEnd: number, rightEnd: number, compareFn: (a: T, b: T) => number) {
+    let swap: T
     const mid = leftEnd + ((rightEnd - leftEnd) >>> 1)
     for (let i = mid - 1; i >= leftEnd; i -= 1) {
       let cur = i
@@ -19,13 +14,19 @@ export class IntroSortArray<T> extends Array<T> {
         if (compareFn(this[cur], this[max]) >= 0) {
           break
         }
-        this.swap(cur, max)
+
+        swap = this[cur]
+        this[cur] = this[max]
+        this[max] = swap
         cur = max
       }
     }
 
     for (let i = rightEnd - 1; i > leftEnd; i -= 1) {
-      this.swap(leftEnd, i)
+      swap = this[leftEnd]
+      this[leftEnd] = this[i]
+      this[i] = swap
+
       let cur = leftEnd
       let left: number
       while ((left = (cur << 1) + 1 - leftEnd) < i) {
@@ -37,7 +38,10 @@ export class IntroSortArray<T> extends Array<T> {
         if (compareFn(this[cur], this[max]) >= 0) {
           break
         }
-        this.swap(cur, max)
+
+        swap = this[cur]
+        this[cur] = this[max]
+        this[max] = swap
         cur = max
       }
     }
@@ -47,6 +51,7 @@ export class IntroSortArray<T> extends Array<T> {
     const pivot = this[leftEnd]
     let low = leftEnd
     let high = rightEnd
+    let swap: T
 
     do {
       do {
@@ -58,7 +63,9 @@ export class IntroSortArray<T> extends Array<T> {
       } while (high >= leftEnd && compareFn(this[high], pivot) > 0)
 
       if (low < high) {
-        this.swap(low, high)
+        swap = this[low]
+        this[low] = this[high]
+        this[high] = swap
       }
     } while (low < high)
 
@@ -69,9 +76,7 @@ export class IntroSortArray<T> extends Array<T> {
 
   private insertionSort(compareFn: (a: T, b: T) => number) {
     const len = this.length
-    for (let i = 1; i < len; i += 1) {
-      const value = this[i]
-
+    for (let i = 1, value = this[i]; i < len; value = this[++i]) {
       let low = 0
       let high = i
       while (low < high) {
