@@ -97,7 +97,7 @@ export class IntroSortArray<T> extends Array<T> {
 
   sort(compareFn: (a: T, b: T) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)): this {
     const len = this.length
-    const stack: [number, number, number][] = [[0, len, Math.ceil(Math.log2(len)) << 1]]
+    const stack: [number, number, number][] = [[0, len, log2ceil(len) << 1]]
 
     while (stack.length > 0) {
       const [leftEnd, rightEnd, depth] = stack.pop()!
@@ -120,4 +120,10 @@ export class IntroSortArray<T> extends Array<T> {
     this.insertionSort(compareFn)
     return this
   }
+}
+
+function log2ceil(x: number) {
+  let i: number, n: number
+  for (i = 0, n = 1; n < x; i += 1, n <<= 1) {}
+  return i
 }
