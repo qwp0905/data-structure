@@ -6,8 +6,7 @@ export class HeapSortArray<T> extends Array<T> {
   }
   sort(compareFn: (a: T, b: T) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)): this {
     const len = this.length
-    const half = len >>> 1
-    for (let i = half - 1; i >= 0; i -= 1) {
+    for (let i = (len >>> 1) - 1; i >= 0; i -= 1) {
       let cur = i
       let left: number
       while (((left = (cur << 1) + 1), left < len)) {

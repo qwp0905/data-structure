@@ -10,7 +10,7 @@ export class IntroSortArray<T> extends Array<T> {
     for (let i = mid - 1; i >= leftEnd; i -= 1) {
       let cur = i
       let left: number
-      while ((left = (cur << 1) + 1) < rightEnd) {
+      while ((left = (cur << 1) + 1 - leftEnd) < rightEnd) {
         const right = left + 1
         let max = left
         if (right < rightEnd && compareFn(this[right], this[left]) > 0) {
@@ -28,7 +28,7 @@ export class IntroSortArray<T> extends Array<T> {
       this.swap(leftEnd, i)
       let cur = leftEnd
       let left: number
-      while ((left = (cur << 1) + 1) < i) {
+      while ((left = (cur << 1) + 1 - leftEnd) < i) {
         const right = left + 1
         let max = left
         if (right < i && compareFn(this[right], this[left]) > 0) {
