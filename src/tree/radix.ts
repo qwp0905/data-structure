@@ -52,7 +52,10 @@ class RadixNode<T> {
 
 export class RadixTree<T> {
   private root: RadixNode<T> = new RadixNode<T>()
-  constructor() {}
+
+  clear() {
+    this.root = new RadixNode()
+  }
 
   get(key: string): T | undefined {
     let current = this.root as RadixNode<T>
