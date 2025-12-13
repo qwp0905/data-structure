@@ -1,56 +1,98 @@
 const EMPTY = ""
 
-export class RadixTree<T> {
-  private children: Map<string, RadixTree<T>>
+class RadixNode<T> {
+  public children: Map<string, RadixNode<T>> | null = null
   constructor(
-    private key: string = "",
-    private value: T | null = null,
-    ...children: RadixTree<T>[]
-  ) {
-    this.children = new Map(children.map((c) => [c.key[0], c]))
+    public key: string = EMPTY,
+    public value: T | null = null
+  ) {}
+
+  shrink(): boolean {
+    if (this.value !== null) {
+      return false
+    }
+    if (this.key === EMPTY) {
+      return false
+    }
+    if (!this.children) {
+      return true
+    }
+    if (this.children.size > 1) {
+      return false
+    }
+
+    const child = this.children.values().next().value!
+    this.key += child.key
+    this.children = child.children
+    this.value = child.value
+    return true
   }
 
-  get(key: string): T | undefined {
-    let current = this as RadixTree<T>
-    let remain = key
-    while (remain !== EMPTY) {
-      const prefix = remain[0]
-      const child = current.children.get(prefix)
-      if (!child) {
-        return
+  split(key: string) {
+    this.key = this.key.slice(key.length)
+    const node = new RadixNode<T>(key, null)
+    node.children = new Map([[this.key[0], this]])
+    return node
+  }
+
+  match(key: string, cursor: number): string {
+    const min = Math.min(key.length - cursor, this.key.length)
+    for (let i = 0; i < min; i += 1) {
+      if (key[i + cursor] !== this.key[i]) {
+        return key.slice(cursor, cursor + i)
       }
-      if (!remain.startsWith(child.key)) {
+    }
+    return key.slice(cursor, cursor + min)
+  }
+
+  isEmpty() {
+    return this.value === null && this.children === null
+  }
+}
+
+export class RadixTree<T> {
+  private root: RadixNode<T> = new RadixNode<T>()
+  constructor() {}
+
+  get(key: string): T | undefined {
+    let current = this.root as RadixNode<T>
+    let cursor = 0
+    while (cursor < key.length) {
+      const prefix = key[cursor]
+      const child = current.children?.get(prefix)
+      if (!child || !key.startsWith(child.key, cursor)) {
         return
       }
 
-      remain = remain.slice(child.key.length)
       current = child
+      cursor += child.key.length
     }
 
     return current.value ?? undefined
   }
 
   insert(key: string, value: T): T | undefined {
-    let current = this as RadixTree<T>
-    let remain = key
-    while (remain !== EMPTY) {
-      const prefix = remain[0]
-      const child = current.children.get(prefix)
+    let current = this.root as RadixNode<T>
+    let cursor = 0
+    while (cursor < key.length) {
+      const prefix = key[cursor]
+      const child = current.children?.get(prefix)
       if (!child) {
-        current.children.set(prefix, (current = new RadixTree<T>(remain)))
-        remain = EMPTY
+        current.children ??= new Map()
+        current.children.set(prefix, (current = new RadixNode<T>(key.slice(cursor))))
+        cursor = key.length
         continue
       }
 
-      const match = child.match(remain)
+      const match = child.match(key, cursor)
+      cursor += match.length
       if (match === child.key) {
         current = child
-        remain = remain.slice(match.length)
         continue
       }
 
+      current.children ??= new Map()
       current.children.set(prefix, (current = child.split(match)))
-      remain = remain.slice(match.length)
     }
 
     const prev = current.value
@@ -59,19 +101,19 @@ export class RadixTree<T> {
   }
 
   remove(key: string): T | undefined {
-    let current = this as RadixTree<T>
-    let remain = key
-    const stack: [string, RadixTree<T>][] = []
+    let current = this.root as RadixNode<T>
+    let cursor = 0
+    const stack: [string, RadixNode<T>][] = []
 
-    while (remain !== EMPTY) {
-      const prefix = remain[0]
-      const child = current.children.get(prefix)
+    while (cursor < key.length) {
+      const prefix = key[cursor]
+      const child = current.children?.get(prefix)
       if (!child) {
         return
       }
       stack.push([prefix, current])
       current = child
-      remain = remain.slice(child.key.length)
+      cursor += child.key.length
     }
 
     if (current.value === null) {
@@ -86,54 +128,33 @@ export class RadixTree<T> {
 
     while (stack.length > 0) {
       const [prefix, parent] = stack.pop()!
-      if (current.children.size > 0 || current.value !== null) {
-        return deleted
+      if (parent.children?.get(prefix)?.isEmpty()) {
+        if (parent.children.delete(prefix) && parent.children.size === 0) {
+          parent.children = null
+        }
       }
-      parent.children.delete(prefix)
       if (!parent.shrink()) {
-        return deleted
+        break
       }
-      current = parent
     }
 
     return deleted
   }
 
-  shrink(): boolean {
-    if (this.value !== null) {
-      return false
-    }
-    if (this.children.size > 1) {
-      return false
-    }
-    if (this.key === EMPTY) {
-      return false
-    }
+  *entries(): Generator<[string, T]> {
+    const stack: [string, RadixNode<T>][] = [[EMPTY, this.root]]
+    while (stack.length > 0) {
+      const [prefix, node] = stack.pop()!
+      if (!node.value !== null) {
+        yield [prefix, node.value!]
+      }
 
-    const [child] = Array.from(this.children.values())
-    if (!child) {
-      return true
-    }
-
-    this.key += child.key
-    this.children = child.children
-    this.value = child.value
-    return true
-  }
-
-  private split(key: string) {
-    this.key = this.key.slice(key.length)
-    const node = new RadixTree<T>(key, null, this)
-    return node
-  }
-
-  private match(key: string): string {
-    const min = Math.min(key.length, this.key.length)
-    for (let i = 0; i < min; i += 1) {
-      if (key[i] !== this.key[i]) {
-        return key.slice(0, i)
+      if (!node.children) {
+        continue
+      }
+      for (const child of node.children.values()) {
+        stack.push([prefix.concat(child.key), child])
       }
     }
-    return key.slice(0, min)
   }
 }
