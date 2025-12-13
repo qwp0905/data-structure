@@ -108,7 +108,7 @@ export class IntroSortArray<T> extends Array<T> {
         }
         continue
       }
-      if (dist < 1) {
+      if (dist <= 1) {
         continue
       }
 
