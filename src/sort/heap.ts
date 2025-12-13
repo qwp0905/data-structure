@@ -1,11 +1,7 @@
 export class HeapSortArray<T> extends Array<T> {
-  private swap(i: number, j: number) {
-    const temp = this[i]
-    this[i] = this[j]
-    this[j] = temp
-  }
   sort(compareFn: (a: T, b: T) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)): this {
     const len = this.length
+    let swap: T
     for (let i = (len >>> 1) - 1; i >= 0; i -= 1) {
       let cur = i
       let left: number
@@ -18,13 +14,18 @@ export class HeapSortArray<T> extends Array<T> {
         if (compareFn(this[cur], this[max]) >= 0) {
           break
         }
-        this.swap(cur, max)
+        swap = this[cur]
+        this[cur] = this[max]
+        this[max] = swap
         cur = max
       }
     }
 
     for (let i = len - 1; i > 0; i -= 1) {
-      this.swap(0, i)
+      swap = this[0]
+      this[0] = this[i]
+      this[i] = swap
+
       let cur = 0
       let left: number
       while (((left = (cur << 1) + 1), left < i)) {
@@ -36,7 +37,9 @@ export class HeapSortArray<T> extends Array<T> {
         if (compareFn(this[cur], this[max]) >= 0) {
           break
         }
-        this.swap(cur, max)
+        swap = this[cur]
+        this[cur] = this[max]
+        this[max] = swap
         cur = max
       }
     }
