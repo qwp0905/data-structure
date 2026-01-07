@@ -21,8 +21,7 @@ export abstract class PriorityQueue<T> {
     let i = this.heap.length - 1
     let p: number
     while (i > 0 && this.compare(this.heap[(p = (i - 1) >>> 1)], value) < 0) {
-      this.swap(i, p)
-      i = p
+      this.swap(i, (i = p))
     }
   }
 
@@ -49,8 +48,7 @@ export abstract class PriorityQueue<T> {
       if (this.compare(this.heap[i], this.heap[max]) >= 0) {
         break
       }
-      this.swap(i, max)
-      i = max
+      this.swap(i, (i = max))
     }
 
     return root
