@@ -5,7 +5,7 @@ export class IntroSortArray<T> extends Array<T> {
     for (let i = mid - 1; i >= leftEnd; i -= 1) {
       let cur = i
       let left: number
-      while ((left = (cur << 1) + 1 - leftEnd) < rightEnd) {
+      while ((left = ((cur << 1) | 1) - leftEnd) < rightEnd) {
         const right = left + 1
         let max = left
         if (right < rightEnd && compareFn(this[right], this[left]) > 0) {
@@ -29,7 +29,7 @@ export class IntroSortArray<T> extends Array<T> {
 
       let cur = leftEnd
       let left: number
-      while ((left = (cur << 1) + 1 - leftEnd) < i) {
+      while ((left = ((cur << 1) | 1) - leftEnd) < i) {
         const right = left + 1
         let max = left
         if (right < i && compareFn(this[right], this[left]) > 0) {
@@ -123,7 +123,7 @@ export class IntroSortArray<T> extends Array<T> {
 }
 
 function log2ceil(x: number) {
-  let i: number, n: number
-  for (i = 0, n = 1; n < x; i += 1, n <<= 1) {}
+  let i: number = 0
+  for (let n = 1; n < x; i += 1, n <<= 1) {}
   return i
 }
