@@ -26,23 +26,18 @@ export abstract class PriorityQueue<T> {
   }
 
   pop(): T | undefined {
-    if (this.heap.length === 0) {
-      return undefined
+    const len = this.heap.length
+    if (len === 0) {
+      return
     }
 
-    const last = this.heap.pop()!
-    if (this.heap.length === 0) {
-      return last
-    }
-
-    const root = this.heap[0]
-    this.heap[0] = last
+    this.swap(0, len - 1)
     let i = 0
     let left
-    while ((left = (i << 1) + 1) < this.heap.length) {
+    while ((left = (i << 1) | 1) < len - 1) {
       const right = left + 1
       let max = left
-      if (right < this.heap.length && this.compare(this.heap[right], this.heap[left]) > 0) {
+      if (right < len - 1 && this.compare(this.heap[right], this.heap[left]) > 0) {
         max = right
       }
       if (this.compare(this.heap[i], this.heap[max]) >= 0) {
@@ -51,7 +46,7 @@ export abstract class PriorityQueue<T> {
       this.swap(i, (i = max))
     }
 
-    return root
+    return this.heap.pop()
   }
 
   peek(): T | undefined {
