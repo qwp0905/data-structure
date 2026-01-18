@@ -24,7 +24,7 @@ export class LinkedList<T> implements Iterable<T> {
 
   pushBack(value: T): void {
     const node = new LinkedNode(value)
-    if (this.len === 0) {
+    if (!this.tail) {
       this.head = node
     } else {
       this.tail!.next = node
@@ -47,10 +47,10 @@ export class LinkedList<T> implements Iterable<T> {
 
   pushFront(v: T): void {
     const node = new LinkedNode(v)
-    if (this.len === 0) {
+    if (!this.head) {
       this.tail = node
     } else {
-      this.head!.prev = node
+      this.head.prev = node
       node.next = this.head
     }
     this.head = node
