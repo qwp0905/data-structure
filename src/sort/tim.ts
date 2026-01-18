@@ -11,8 +11,9 @@ export class TimSortArray<T> extends Array<T> {
     for (let size = RUN; size < len; size <<= 1) {
       let right: number
       let mid: number
-      for (let left = 0; (mid = left + size) < (right = Math.min(mid + size, len)); left = right) {
-        this.merge(left, mid, right, compareFn, tmp)
+      let left = 0
+      while ((mid = left + size) < (right = Math.min(mid + size, len))) {
+        this.merge(left, mid, (left = right), compareFn, tmp)
       }
     }
     return this

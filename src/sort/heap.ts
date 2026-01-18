@@ -5,7 +5,7 @@ export class HeapSortArray<T> extends Array<T> {
     for (let i = (len >>> 1) - 1; i >= 0; i -= 1) {
       let cur = i
       let left: number
-      while (((left = (cur << 1) + 1), left < len)) {
+      while ((left = (cur << 1) | 1) < len) {
         const right = left + 1
         let max = left
         if (right < len && compareFn(this[right], this[left]) > 0) {
@@ -28,7 +28,7 @@ export class HeapSortArray<T> extends Array<T> {
 
       let cur = 0
       let left: number
-      while (((left = (cur << 1) + 1), left < i)) {
+      while ((left = (cur << 1) | 1) < i) {
         const right = left + 1
         let max = left
         if (right < i && compareFn(this[right], this[left]) > 0) {
