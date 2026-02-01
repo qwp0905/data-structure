@@ -24,17 +24,17 @@ class Node<T, E extends Entry<T>> {
     }
     if (left > right) {
       if (this.left!.left) {
-        return this.rotateLeft()
+        return this.rotateRight()
       }
-      this.left = this.left!.rotateRight()
-      return this.rotateLeft()
+      this.left = this.left!.rotateLeft()
+      return this.rotateRight()
     }
 
     if (this.right!.right) {
-      return this.rotateRight()
+      return this.rotateLeft()
     }
-    this.right = this.right!.rotateLeft()
-    return this.rotateRight()
+    this.right = this.right!.rotateRight()
+    return this.rotateLeft()
   }
 
   getPredecessor() {
@@ -52,7 +52,7 @@ class Node<T, E extends Entry<T>> {
     return node
   }
 
-  private rotateLeft() {
+  private rotateRight() {
     const node = this.left!
     this.left = node.right
     node.right = this
@@ -61,7 +61,7 @@ class Node<T, E extends Entry<T>> {
     return node
   }
 
-  private rotateRight() {
+  private rotateLeft() {
     const node = this.right!
     this.right = node.left
     node.left = this
