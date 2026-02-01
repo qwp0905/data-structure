@@ -97,7 +97,8 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     }
 
     let current = this.root as Node<T, E> | null
-    const stack: [Node<T, E>, Direction][] = []
+    const stack1: Node<T, E>[] = []
+    const stack2: Direction[] = []
 
     while (current) {
       const currentEntry = current.entry
@@ -106,10 +107,12 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
         current.entry = entry
         return currentEntry
       } else if (cmp < 0) {
-        stack.push([current, Direction.left])
+        stack1.push(current)
+        stack2.push(Direction.left)
         current = current.left
       } else {
-        stack.push([current, Direction.right])
+        stack1.push(current)
+        stack2.push(Direction.right)
         current = current.right
       }
     }
@@ -117,10 +120,9 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     this.len += 1
     current = new Node(entry)
 
-    while (stack.length > 0) {
-      const [parent, direction] = stack.pop()!
-      const key = direction === Direction.left ? "left" : "right"
-      parent[key] = current
+    while (stack1.length > 0) {
+      const parent = stack1.pop()!
+      parent[stack2.pop() === Direction.left ? "left" : "right"] = current
       current = parent.rebalance()
     }
 
@@ -143,16 +145,19 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
 
   remove(k: T): E | undefined {
     let current = this.root as Node<T, E> | null
-    const stack: [Node<T, E>, Direction][] = []
+    const stack1: Node<T, E>[] = []
+    const stack2: Direction[] = []
 
     while (current) {
       const cmp = current.cmp(k)
       if (cmp < 0) {
-        stack.push([current, Direction.left])
+        stack1.push(current)
+        stack2.push(Direction.left)
         current = current.left
         continue
       } else if (cmp > 0) {
-        stack.push([current, Direction.right])
+        stack1.push(current)
+        stack2.push(Direction.right)
         current = current.right
         continue
       }
@@ -162,7 +167,8 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
         const entry = pred.entry
         pred.entry = current.entry
         current.entry = entry
-        stack.push([current, Direction.left])
+        stack1.push(current)
+        stack2.push(Direction.left)
         current = current.left
         continue
       }
@@ -171,7 +177,8 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
         const entry = suc.entry
         suc.entry = current.entry
         current.entry = entry
-        stack.push([current, Direction.right])
+        stack1.push(current)
+        stack2.push(Direction.right)
         current = current.right
         continue
       }
@@ -186,10 +193,9 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
     const deleted = current.entry
     current = null
 
-    while (stack.length > 0) {
-      const [parent, direction] = stack.pop()!
-      const key = direction === Direction.left ? "left" : "right"
-      parent[key] = current
+    while (stack1.length > 0) {
+      const parent = stack1.pop()!
+      parent[stack2.pop() === Direction.left ? "left" : "right"] = current
       current = parent.rebalance()
     }
 
