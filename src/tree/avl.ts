@@ -130,8 +130,7 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
   }
 
   get(k: T): E | undefined {
-    let current = this.root as Node<T, E> | null
-    while (current) {
+    for (let current = this.root; current !== null; ) {
       const cmp = current.cmp(k)
       if (cmp === 0) {
         return current.entry
