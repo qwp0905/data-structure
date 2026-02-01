@@ -90,12 +90,6 @@ export class AVLTree<T, E extends Entry<T> = Entry<T>> {
   }
 
   insert(entry: E): E | undefined {
-    if (!this.root) {
-      this.root = new Node(entry)
-      this.len += 1
-      return
-    }
-
     let current = this.root as Node<T, E> | null
     const stack1: Node<T, E>[] = []
     const stack2: Direction[] = []
