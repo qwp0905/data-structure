@@ -20,7 +20,7 @@ export abstract class PriorityQueue<T> {
     this.heap.push(value)
     let i = this.heap.length - 1
     let p: number
-    while (i > 0 && this.compare(this.heap[(p = (i - 1) >>> 1)], value) < 0) {
+    while (i > 0 && this.compare(this.heap[(p = (i - 1) >>> 1)], value) > 0) {
       this.swap(i, (i = p))
     }
   }
@@ -37,10 +37,10 @@ export abstract class PriorityQueue<T> {
     while ((left = (i << 1) | 1) < len - 1) {
       const right = left + 1
       let max = left
-      if (right < len - 1 && this.compare(this.heap[right], this.heap[left]) > 0) {
+      if (right < len - 1 && this.compare(this.heap[right], this.heap[left]) < 0) {
         max = right
       }
-      if (this.compare(this.heap[i], this.heap[max]) >= 0) {
+      if (this.compare(this.heap[i], this.heap[max]) <= 0) {
         break
       }
       this.swap(i, (i = max))
@@ -62,11 +62,11 @@ export abstract class PriorityQueue<T> {
 
 export class MinHeap extends PriorityQueue<number> {
   protected compare(a: number, b: number): number {
-    return b - a
+    return a - b
   }
 }
 export class MaxHeap extends PriorityQueue<number> {
   protected compare(a: number, b: number): number {
-    return a - b
+    return b - a
   }
 }
