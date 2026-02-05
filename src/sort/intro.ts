@@ -118,12 +118,9 @@ export class IntroSortArray<T> extends Array<T> {
       }
 
       const high = this.quickSort(leftEnd, rightEnd, compareFn)
-      s1.push(leftEnd)
-      s2.push(high)
-      s3.push(depth - 1)
-      s1.push(high + 1)
-      s2.push(rightEnd)
-      s3.push(depth - 1)
+      s1.push(leftEnd, high + 1)
+      s2.push(high, rightEnd)
+      s3.push(depth - 1, depth - 1)
     }
 
     this.insertionSort(compareFn)

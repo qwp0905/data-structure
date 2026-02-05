@@ -1,10 +1,12 @@
 export class QuickSortArray<T> extends Array<T> {
   sort(compareFn: (a: T, b: T) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)): this {
     const len = this.length
-    const stack: [number, number][] = [[0, len]]
+    const s1 = [0]
+    const s2 = [len]
 
-    while (stack.length > 0) {
-      const [leftEnd, rightEnd] = stack.pop()!
+    while (s1.length > 0) {
+      const leftEnd = s1.pop()!
+      const rightEnd = s2.pop()!
       if (rightEnd - leftEnd <= 1) {
         continue
       }
@@ -32,8 +34,8 @@ export class QuickSortArray<T> extends Array<T> {
 
       this[leftEnd] = this[high]
       this[high] = pivot
-      stack.push([leftEnd, high])
-      stack.push([high + 1, rightEnd])
+      s1.push(leftEnd, high + 1)
+      s2.push(high, rightEnd)
     }
     return this
   }
