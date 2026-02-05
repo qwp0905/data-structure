@@ -97,24 +97,33 @@ export class IntroSortArray<T> extends Array<T> {
 
   sort(compareFn: (a: T, b: T) => number = (a, b) => (a > b ? 1 : a < b ? -1 : 0)): this {
     const len = this.length
-    const stack: [number, number, number][] = [[0, len, log2ceil(len) << 1]]
+    const s1 = [0]
+    const s2 = [len]
+    const s3 = [log2ceil(len) << 1]
 
-    while (stack.length > 0) {
-      const [leftEnd, rightEnd, depth] = stack.pop()!
+    while (s1.length > 0) {
+      const leftEnd = s1.pop()!
+      const rightEnd = s2.pop()!
+      const depth = s3.pop()!
       const dist = rightEnd - leftEnd
+      if (dist <= 1) {
+        continue
+      }
+
       if (depth === 0) {
         if (dist > 16) {
           this.heapSort(leftEnd, rightEnd, compareFn)
         }
         continue
       }
-      if (dist <= 1) {
-        continue
-      }
 
       const high = this.quickSort(leftEnd, rightEnd, compareFn)
-      stack.push([leftEnd, high, depth - 1])
-      stack.push([high + 1, rightEnd, depth - 1])
+      s1.push(leftEnd)
+      s2.push(high)
+      s3.push(depth - 1)
+      s1.push(high + 1)
+      s2.push(rightEnd)
+      s3.push(depth - 1)
     }
 
     this.insertionSort(compareFn)
